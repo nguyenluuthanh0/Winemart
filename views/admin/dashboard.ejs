@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="container">
+        <div class="admin-header">
+            <h1>Quản lý Sản phẩm</h1>
+            <a href="/admin/add-product" class="btn-add-new">Thêm sản phẩm mới</a>
+        </div>
+
+        <form action="/admin" method="GET" class="admin-search-form">
+            <input 
+                type="search" 
+                name="search" 
+                id="admin-search-input" 
+                placeholder="Nhập tên sản phẩm cần tìm..."
+                value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
+            >
+            <button type="submit" class="btn-edit">Tìm</button>
+        </form>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Tên sản phẩm</th>
+                    <th>Loại</th>
+                    <th>Giá</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% items.forEach(item => { %>
+                    <% const itemType = item.constructor.modelName.toLowerCase() %>
+                    <tr>
+                        <td><%= item.name %></td>
+                        <td><%= item.category || item.type %></td>
+                        <td><%= new Intl.NumberFormat('vi-VN').format(item.price) %> ₫</td>
+                        <td class="actions">
+                            <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
+                            <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                <button type="submit" class="btn-delete">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

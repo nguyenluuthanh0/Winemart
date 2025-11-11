@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Xác thực tài khoản - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" ... />
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate"> ... </div>
+
+    <%- include('partials/header') %>
+    
+    <div class="container">
+        <div class="page-header" style="max-width: 500px; margin: 3rem auto; text-align: center;">
+            <h1>Xác thực tài khoản</h1>
+            <p>Một mã OTP gồm 6 chữ số đã được gửi đến <strong><%= email %></strong>. Vui lòng kiểm tra email (cả mục Spam) và nhập mã vào bên dưới.</p>
+        </div>
+
+        <form class="checkout-form lookup-form" action="/verify-otp" method="POST">
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="message error"><%= error %></p>
+            <% } %>
+
+            <div class="form-group">
+                <label for="otp">Mã OTP</label>
+                <input type="text" id="otp" name="otp" required minlength="6" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+            </div>
+            
+            <button type="submit" class="btn-auth" style="width: 100%; margin-top: 1rem;">Xác nhận</button>
+        </form>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <div id="toast-container"></div>
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+</body>
+</html>

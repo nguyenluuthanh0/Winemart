@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title><%= categoryName %> - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <nav class="container breadcrumbs">
+        <ul>
+            <% breadcrumbs.forEach((crumb) => { %>
+                <li>
+                    <% if (crumb.link) { %>
+                        <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                        <span class="separator">/</span> 
+                    <% } else { %>
+                        <span class="current-page"><%= crumb.name %></span> 
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container product-section">
+            <div class="product-grid">
+                <% if (items.length > 0) { %>
+                    <% items.forEach(item => { %>
+                        <% const itemType = item.constructor.modelName.toLowerCase() %>
+                        <div class="product-card">
+                            <a href="/items/detail/<%= itemType %>/<%= item._id %>" class="product-link">
+                                <img src="<%= item.imageUrl %>" alt="<%= item.name %>">
+                                <h3><%= item.name %></h3>
+                                <p class="product-origin"><%= item.category %></p> 
+                                <p class="product-price"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price) %></p>
+                            </a>
+                            <button class="btn-add-to-cart" 
+                                    data-product-id="<%= item._id %>" 
+                                    data-item-type="<%= item.constructor.modelName %>">
+                                Thêm vào giỏ
+                            </button>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>Chưa có sản phẩm nào trong danh mục này.</p>
+                <% } %>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const productGrid = document.querySelector('.product-grid');
+            if (productGrid) {
+                // THAY THẾ KHỐI NÀY
+                productGrid.addEventListener('click', (event) => {
+                    const button = event.target.closest('button.btn-add-to-cart');
+                    if (button) {
+                        const itemId = button.dataset.productId;
+                        const itemType = button.dataset.itemType; // Lấy thêm itemType
+                        if (itemId && itemType) {
+                            addToCart(itemId, itemType); // Gửi cả hai
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    <%- include('partials/footer') %>
+    <div id="toast-container"></div>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/header.js"></script>
+    
+</body>
+</html>

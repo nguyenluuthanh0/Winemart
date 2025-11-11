@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title><%= item.name %> - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+    <%- include('partials/header') %>
+    
+    <main>
+        <div class="container product-detail-section">
+            <div class="product-detail-image">
+                <img src="<%= item.imageUrl %>" alt="<%= item.name %>">
+            </div>
+            <div class="product-detail-info">
+                <h1><%= item.name %></h1>
+
+                <% if(item.brand) { %><p class="brand">Thương hiệu: <%= item.brand %></p><% } %>
+                <% if(item.origin) { %><p class="origin">Xuất xứ: <%= item.origin %></p><% } %>
+                <% if(item.type) { %><p class="type">Loại vang: <%= item.type %></p><% } %>
+                <% if(item.category) { %><p class="type">Danh mục: <%= item.category %></p><% } %>
+                <% if(item.volume) { %><p class="volume">Dung tích: <%= item.volume %>ml</p><% } %>
+
+                <div class="price">
+                    <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price) %>
+                </div>
+
+                <p class="description"><%= item.description %></p>
+
+                <button class="btn-add-to-cart" onclick="addToCart('<%= item._id %>', '<%= item.constructor.modelName %>')">Thêm vào giỏ</button>
+            </div>
+        </div>
+    </main>
+    <section class="container review-section">
+        <div class="review-section-title">
+            <span class="line"></span>
+            <h2>ĐÁNH GIÁ SẢN PHẨM</h2>
+            <span class="line"></span>
+        </div>
+
+        <div class="review-summary">
+            <div class="summary-left">
+                <div class="average-rating-text">Điểm đánh giá trung bình</div>
+                <div class="average-rating-score">
+                    <% 
+                        let totalRating = 0;
+                        if (item.reviews && item.reviews.length > 0) {
+                            item.reviews.forEach(r => { totalRating += r.rating; });
+                            totalRating = (totalRating / item.reviews.length).toFixed(1);
+                        }
+                    %>
+                    <strong><%= totalRating %></strong>/5
+                </div>
+                <div class="review-count">(<%= item.reviews ? item.reviews.length : 0 %> lượt đánh giá)</div>
+                
+                <div class="user-prompt-rating">Bạn cảm thấy sản phẩm này như thế nào?</div>
+                <div class="user-rating-stars-display" id="user-prompt-rating-stars">
+                    <i class="far fa-star" data-value="1"></i>
+                    <i class="far fa-star" data-value="2"></i>
+                    <i class="far fa-star" data-value="3"></i>
+                    <i class="far fa-star" data-value="4"></i>
+                    <i class="far fa-star" data-value="5"></i>
+                </div>
+            </div>
+            
+            <div class="summary-middle">
+                <% 
+                    const ratingsCount = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+                    const totalReviews = item.reviews ? item.reviews.length : 0;
+                    if (totalReviews > 0) {
+                        item.reviews.forEach(r => { ratingsCount[r.rating]++; });
+                    }
+                %>
+                <div class="rating-bar-row">
+                    <span>5 <i class="fas fa-star"></i></span>
+                    <div class="rating-bar"><div class="rating-bar-fill" style="width: <%= totalReviews > 0 ? (ratingsCount[5] / totalReviews * 100) : 0 %>%"></div></div>
+                    <span><%= ratingsCount[5] %></span>
+                </div>
+                <div class="rating-bar-row">
+                    <span>4 <i class="fas fa-star"></i></span>
+                    <div class="rating-bar"><div class="rating-bar-fill" style="width: <%= totalReviews > 0 ? (ratingsCount[4] / totalReviews * 100) : 0 %>%"></div></div>
+                    <span><%= ratingsCount[4] %></span>
+                </div>
+                <div class="rating-bar-row">
+                    <span>3 <i class="fas fa-star"></i></span>
+                    <div class="rating-bar"><div class="rating-bar-fill" style="width: <%= totalReviews > 0 ? (ratingsCount[3] / totalReviews * 100) : 0 %>%"></div></div>
+                    <span><%= ratingsCount[3] %></span>
+                </div>
+                <div class="rating-bar-row">
+                    <span>2 <i class="fas fa-star"></i></span>
+                    <div class="rating-bar"><div class="rating-bar-fill" style="width: <%= totalReviews > 0 ? (ratingsCount[2] / totalReviews * 100) : 0 %>%"></div></div>
+                    <span><%= ratingsCount[2] %></span>
+                </div>
+                <div class="rating-bar-row">
+                    <span>1 <i class="fas fa-star"></i></span>
+                    <div class="rating-bar"><div class="rating-bar-fill" style="width: <%= totalReviews > 0 ? (ratingsCount[1] / totalReviews * 100) : 0 %>%"></div></div>
+                    <span><%= ratingsCount[1] %></span>
+                </div>
+            </div>
+
+            <div class="summary-right">
+                <p>Vui lòng chia sẻ nhận xét về sản phẩm của Winemart</p>
+                <button class="btn-write-review" id="btn-open-review-modal">Viết đánh giá</button>
+            </div>
+        </div>
+
+        <div class="review-list">
+            <% if (item.reviews && item.reviews.length > 0) { %>
+                <% item.reviews.slice().reverse().forEach(review => { %> <div class="review-item">
+                        <div class="review-author-avatar"><%= review.name.charAt(0).toUpperCase() %></div>
+                        <div class="review-content">
+                            <div class="review-author-name"><%= review.name %></div>
+                            <div class="review-stars">
+                                <% for(let i = 1; i <= 5; i++) { %>
+                                    <i class="fas fa-star <%= i <= review.rating ? 'filled' : '' %>"></i>
+                                <% } %>
+                            </div>
+                            <div class="review-timestamp"><%= new Date(review.createdAt).toLocaleDateString('vi-VN') %></div>
+                            <p class="review-comment-text"><%= review.comment %></p>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p style="text-align: center; margin: 2rem 0;">Chưa có lượt đánh giá nào cho sản phẩm này.</p>
+            <% } %>
+        </div>
+    </section>
+
+    <div id="review-modal-overlay" class="review-modal">
+        <div class="review-modal-content">
+            <span id="btn-close-review-modal" class="close-review-modal">&times;</span>
+            <h2>Viết đánh giá</h2>
+            <form id="review-form" action="/items/review/<%= item.constructor.modelName.toLowerCase() %>/<%= item._id %>" method="POST">
+                <p id="review-form-error" class="message error" style="display: none;"></p>
+                
+                <% if (currentUser) { %>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <label for="review-name">Tên của bạn</label>
+                            <input type="text" id="review-name" name="name" value="<%= currentUser.email.split('@')[0] %>" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="review-email">Email</label>
+                            <input type="email" id="review-email" name="email" value="<%= currentUser.email %>" readonly>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <label for="review-name">Tên của bạn</label>
+                            <input type="text" id="review-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="review-email">Email</label>
+                            <input type="email" id="review-email" name="email" required>
+                        </div>
+                    </div>
+                <% } %>
+
+                <div class="form-group">
+                    <label>Bạn cảm thấy sản phẩm này như thế nào?</label>
+                    <div class="star-rating-input" id="star-rating-input">
+                        <i class="far fa-star" data-value="1"></i>
+                        <i class="far fa-star" data-value="2"></i>
+                        <i class="far fa-star" data-value="3"></i>
+                        <i class="far fa-star" data-value="4"></i>
+                        <i class="far fa-star" data-value="5"></i>
+                    </div>
+                    <input type="hidden" name="rating" id="rating-value" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="review-comment">Nội dung đánh giá</label>
+                    <textarea id="review-comment" name="comment" rows="5" placeholder="Nhập nội dung..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-auth">Gửi đánh giá</button>
+            </form>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <div id="toast-container"></div> 
+    <script src="/js/notifications.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/item-detail.js"></script>
+</body>
+</html>

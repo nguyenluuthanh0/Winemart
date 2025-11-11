@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Giỏ hàng của bạn - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <div class="container cart-page-container">
+        <h1 class="page-title">Giỏ hàng</h1>
+        <p class="cart-summary-text" id="cart-item-count-text">Bạn đang có 0 sản phẩm trong giỏ hàng</p>
+
+        <div class="cart-layout">
+            <div class="cart-items-list" id="cart-items-container">
+                <p style="text-align: center; margin-top: 2rem;">Giỏ hàng của bạn trống.</p>
+            </div>
+
+            <div class="cart-summary-box">
+                <h3>Thông tin đơn hàng</h3>
+                <div class="summary-line">
+                    <span>Tạm tính</span>
+                    <span id="cart-subtotal">0 ₫</span>
+                </div>
+                <hr>
+                <div class="summary-total-final">
+                    <span>Tổng cộng</span>
+                    <span id="cart-total-final">0 ₫</span>
+                </div>
+                <a href="/order/checkout" class="btn-primary btn-proceed-checkout" id="btn-proceed-checkout">Tiến hành đặt hàng</a>
+                <a href="/" class="btn-secondary btn-continue-shopping">Tiếp tục mua hàng</a>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    
+    <div id="toast-container"></div>
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

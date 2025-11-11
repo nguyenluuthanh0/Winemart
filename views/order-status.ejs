@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Chi Tiết Đơn Hàng - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+    <%- include('partials/header') %>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Chi Tiết Đơn Hàng #<%= order.orderId.split('-')[0] %>...</h1>
+        </div>
+
+        <div class="order-status-layout">
+            <div class="order-status-details">
+                <h3>Thông tin chung</h3>
+                <p><strong>Ngày đặt:</strong> <%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></p>
+                <p><strong>Tổng tiền:</strong> <span class="order-total-price"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.amount) %></span></p>
+                <p><strong>Trạng thái:</strong> 
+                    <span class="order-status-badge status-<%= order.status %>">
+                        <% if (order.status === 'pending') { %>
+                            Chờ thanh toán
+                        <% } else if (order.status === 'processing') { %>
+                            Đang xử lý
+                        <% } else if (order.status === 'completed') { %>
+                            Hoàn thành
+                        <% } else if (order.status === 'failed') { %>
+                            Thất bại
+                        <% } else if (order.status === 'cancelled') { %>
+                            Đã hủy
+                        <% } else { %>
+                            <%= order.status %>
+                        <% } %>
+                    </span>
+                </p>                
+                <h3 style="margin-top: 2rem;">Thông tin giao hàng</h3>
+                <p><strong>Khách hàng:</strong> <%= order.customerInfo.name %></p>
+                <p><strong>Điện thoại:</strong> <%= order.customerInfo.phone %></p>
+                <p><strong>Địa chỉ:</strong> <%= order.customerInfo.address %></p>
+            </div>
+
+            <div class="order-status-items">
+                <h3>Các sản phẩm trong đơn</h3>
+                <% order.items.forEach(item => { %>
+                    <% if (item.item) { %> <div class="summary-item">
+                            <img src="<%= item.item.imageUrl %>" alt="<%= item.item.name %>" class="summary-item-img">
+                            <div class="summary-item-info">
+                                <span class="summary-item-name"><%= item.item.name %> (x<%= item.quantity %>)</span>
+                            </div>
+                            <span class="summary-item-price"><%= new Intl.NumberFormat('vi-VN').format(item.price * item.quantity) %> ₫</span>
+                        </div>
+                    <% } %>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <div id="toast-container"></div>
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

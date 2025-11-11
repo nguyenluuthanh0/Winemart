@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WineMart Clone - Cửa hàng Rượu Vang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+    <%- include('partials/header') %>
+    <main>
+        <section class="hero-slider">
+            <div class="swiper heroSwiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide slide-1">
+                        <div class="slide-content container">
+                            <h1>Khám Phá Thế Giới Rượu Vang</h1>
+                            <p>Tuyển chọn những chai rượu vang hảo hạng từ khắp nơi trên thế giới.</p>
+                            <a href="#product-section" class="btn-hero scroll-link">Xem Ngay</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide slide-2">
+                        <div class="slide-content container">
+                            <h1>Ưu Đãi Đặc Biệt Tháng 10</h1>
+                            <p>Giảm giá lên đến 20% cho các dòng vang Chile chọn lọc.</p>
+                            <a href="#product-section" class="btn-hero scroll-link" data-filter-origin="Chile">Tìm Hiểu Thêm</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide slide-3">
+                        <div class="slide-content container">
+                            <h1>Bộ Sưu Tập Phụ Kiện Mới</h1>
+                            <p>Ly pha lê, decanter và đồ khui rượu chính hãng.</p>
+                            <a href="/products/category/Ly uống rượu" class="btn-hero">Khám Phá</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide slide-4">
+                        <div class="slide-content container">
+                            <h1>Quà Tặng Rượu Vang Đẳng Cấp</h1>
+                            <p>Hộp quà sang trọng, ý nghĩa cho đối tác và người thân.</p>
+                            <a href="/products/category/Hộp quà rượu vang" class="btn-hero">Chọn Quà</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </section>
+        <section class="quick-filter-section container">
+            <div class="quick-filter-title">
+                <span class="line"></span>
+                <h2>LỰA CHỌN NHANH</h2>
+                <span class="line"></span>
+            </div>
+
+            <form id="quick-filter-form" class="filter-box-container">
+                
+                <div class="filter-box">
+                    <label for="filter-type">LOẠI RƯỢU</label>
+                    <select id="filter-type" name="type">
+                        <option value="">Không xác định</option>
+                        <option value="Vang đỏ">Vang đỏ</option>
+                        <option value="Vang trắng">Vang trắng</option>
+                        <option value="Vang hồng">Vang hồng</option>
+                        <option value="Vang sủi">Vang sủi</option>
+                        <option value="Vang ngọt">Vang ngọt</option>
+                    </select>
+                </div>
+
+                <div class="filter-box">
+                    <label for="filter-origin">XUẤT XỨ</label>
+                    <select id="filter-origin" name="origin">
+                        <option value="">Không xác định</option>
+                        <option value="Ý">Ý</option>
+                        <option value="Pháp">Pháp</option>
+                        <option value="Chile">Chile</option>
+                        <option value="Mỹ">Mỹ</option>
+                        <option value="Úc">Úc</option>
+                        <option value="Tây Ban Nha">Tây Ban Nha</option>
+                        <option value="Argentina">Argentina</option>
+                        </select>
+                </div>
+                <div class="filter-box">
+                    <label for="filter-brand">THƯƠNG HIỆU</label>
+                    <select id="filter-brand" name="brand">
+                        <option value="">Không xác định</option>
+                        
+                        <option value="Alamos">Alamos</option>
+                        <option value="Antinori">Antinori</option>
+                        <option value="Barista">Barista</option>
+                        <option value="Bollato Di Oro">Bollato Di Oro</option>
+                        <option value="Catena Zapata">Catena Zapata</option>
+                        <option value="Château d'Esclans">Château d'Esclans</option>
+                        <option value="Château d'Yquem">Château d'Yquem</option>
+                        <option value="Château Lagrange">Château Lagrange</option>
+                        <option value="Cloudy Bay">Cloudy Bay</option>
+                        <option value="Concha y Toro">Concha y Toro</option>
+                        <option value="Dr. Loosen">Dr. Loosen</option>
+                        <option value="Frescobaldi">Frescobaldi</option>
+                        <option value="Freixenet">Freixenet</option>
+                        <option value="Graham's">Graham's</option>
+                        <option value="Kendall-Jackson">Kendall-Jackson</option>
+                        <option value="Ken Forrester">Ken Forrester</option>
+                        <option value="Louis Jadot">Louis Jadot</option>
+                        <option value="M. Chapoutier">M. Chapoutier</option>
+                        <option value="Marqués de Riscal">Marqués de Riscal</option>
+                        <option value="Masi">Masi</option>
+                        <option value="Mionetto">Mionetto</option>
+                        <option value="Montes">Montes</option>
+                        <option value="Penfolds">Penfolds</option>
+                        <option value="Pio Cesare">Pio Cesare</option>
+                        <option value="Ravenswood">Ravenswood</option>
+                        <option value="Robert Mondavi">Robert Mondavi</option>
+                        <option value="Santa Margherita">Santa Margherita</option>
+                        <option value="Torres">Torres</option>
+                        <option value="Trimbach">Trimbach</option>
+                        <option value="Veuve Clicquot">Veuve Clicquot</option>
+                        <option value="Villa Maria">Villa Maria</option>
+                        <option value="Yellow Tail">Yellow Tail</option>
+                        
+                        <option value="Kadeka">Kadeka</option>
+                        <option value="Laguiole">Laguiole</option>
+                        <option value="Lismore">Lismore</option>
+                        <option value="Lucaris">Lucaris</option>
+                        <option value="Rabbit">Rabbit</option>
+                        <option value="Riedel">Riedel</option>
+                        <option value="Vacu Vin">Vacu Vin</option>
+                        <option value="Vinocave">Vinocave</option>
+                    </select>
+                </div>
+
+                <div class="filter-box">
+                    <label for="filter-budget">NGÂN SÁCH</label>
+                    <select id="filter-budget" name="budget">
+                        <option value="">Không xác định</option>
+                        <option value="0-500000">Dưới 500.000 ₫</option>
+                        <option value="500000-1000000">500.000 ₫ - 1.000.000 ₫</option>
+                        <option value="1000000-2000000">1.000.000 ₫ - 2.000.000 ₫</option>
+                        <option value="2000000-99999999">Trên 2.000.000 ₫</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="filter-submit-btn">TÌM KIẾM</button>
+                
+            </form>
+        </section>
+        <section class="product-section" id="product-section">
+            <div class="container">
+                <h2>Sản Phẩm Nổi Bật</h2>
+                <div id="product-list" class="product-grid">
+                    <div id="loading-spinner" class="spinner-container">
+                        <div class="spinner"></div>
+                    </div>
+                    </div>
+                <div id="pagination-container" class="pagination">
+                    </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('partials/footer') %>
+
+    <div id="toast-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

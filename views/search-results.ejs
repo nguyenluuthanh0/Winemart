@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Kết quả tìm kiếm cho "<%= queryTerm %>" - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" ... />
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+    <%- include('partials/header') %>
+    
+    <nav class="container breadcrumbs">
+        <ul>
+            <% breadcrumbs.forEach((crumb) => { %>
+                <li>
+                    <% if (crumb.link) { %>
+                        <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                        <span class="separator">/</span> 
+                    <% } else { %>
+                        <span class="current-page"><%= crumb.name %></span> 
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container product-section">
+            <h1 style="text-align: center; color: #a0522d; margin-bottom: 2rem;">
+                Kết quả tìm kiếm cho: "<%= queryTerm %>"
+            </h1>
+            <p style="text-align: center; margin-bottom: 2rem; font-size: 1.1rem;">
+                Tìm thấy <strong><%= results.length %></strong> sản phẩm.
+            </p>
+
+            <div class="product-grid">
+                <% if (results.length > 0) { %>
+                    <% results.forEach(item => { %>
+                        <% const itemType = item.constructor.modelName.toLowerCase() %>
+                        <div class="product-card">
+                            <a href="/items/detail/<%= itemType %>/<%= item._id %>" class="product-link">
+                                <img src="<%= item.imageUrl %>" alt="<%= item.name %>">
+                                <h3><%= item.name %></h3>
+                                <p class="product-origin"><%= item.category || item.type %></p> 
+                                <p class="product-price"><%= new Intl.NumberFormat('vi-VN').format(item.price) %> ₫</p>
+                            </a>
+                            <button class="btn-add-to-cart" 
+                                    data-product-id="<%= item._id %>" 
+                                    data-item-type="<%= item.constructor.modelName %>">
+                                Thêm vào giỏ
+                            </button>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+    <div id="toast-container"></div>
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const productGrid = document.querySelector('.product-grid');
+            if (productGrid) {
+                // THAY THẾ KHỐI NÀY
+                productGrid.addEventListener('click', (event) => {
+                    const button = event.target.closest('button.btn-add-to-cart');
+                    if (button) {
+                        const itemId = button.dataset.productId;
+                        const itemType = button.dataset.itemType; // Lấy thêm itemType
+                        if (itemId && itemType) {
+                            addToCart(itemId, itemType); // Gửi cả hai
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

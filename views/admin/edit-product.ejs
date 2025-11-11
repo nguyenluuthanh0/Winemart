@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Sửa Sản phẩm</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <%- include('../partials/header') %>
+    <div class="container">
+        <h1>Sửa sản phẩm: <%= product.name %></h1>
+        <form class="admin-form" action="/admin/edit-product/<%= product._id %>" method="POST">
+            <div class="form-group"><label>Tên</label><input type="text" name="name" value="<%= product.name %>" required></div>
+            <div class="form-group"><label>Thương hiệu</label><input type="text" name="brand" value="<%= product.brand %>" required></div>
+            <div class="form-group"><label>Xuất xứ</label><input type="text" name="origin" value="<%= product.origin %>" required></div>
+            <div class="form-group"><label>Loại vang</label><input type="text" name="type" value="<%= product.type %>" required></div>
+            <div class="form-group"><label>Mô tả</label><textarea name="description" required><%= product.description %></textarea></div>
+            <div class="form-group"><label>Link ảnh</label><input type="text" name="imageUrl" value="<%= product.imageUrl %>" required></div>
+            <div class="form-group"><label>Giá</label><input type="number" name="price" value="<%= product.price %>" required></div>
+            <div class="form-group"><label>Dung tích (ml)</label><input type="number" name="volume" value="<%= product.volume %>" required></div>
+            <button type="submit">Cập nhật</button>
+        </form>
+    </div>
+</body>
+</html>

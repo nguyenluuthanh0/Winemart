@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Trạng thái Đơn hàng - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+ 
+    <%- include('partials/header') %>
+    
+    <div class="container" style="text-align: center; padding: 4rem 1rem;">
+        
+        <h1><%= typeof message !== 'undefined' ? message : 'Trạng thái đơn hàng' %></h1>
+        
+        <p style="margin: 2rem 0;">Cảm ơn bạn đã mua sắm tại WineMart. Chúng tôi sẽ liên hệ với bạn sớm nhất.</p>
+        <a href="/" class="btn-add-new" style="background-color: #c5a47e; text-decoration: none;">Quay về trang chủ</a>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <div id="toast-container"></div>
+    
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

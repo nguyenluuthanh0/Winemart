@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Liên hệ - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+
+    <%- include('partials/header') %>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Liên Hệ Với Chúng Tôi</h1>
+            <p>Chúng tôi luôn sẵn lòng lắng nghe từ bạn. Vui lòng sử dụng thông tin bên dưới hoặc gửi tin nhắn trực tiếp cho chúng tôi.</p>
+        </div>
+
+        <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+            <p class="message success"><%= successMessage %></p>
+        <% } %>
+
+        <div class="contact-section">
+            <div class="contact-info">
+                <h2>Thông tin cửa hàng</h2>
+                <p><strong>Cơ sở 1:</strong> 18 P. Viên, Đông Ngạc, Bắc Từ Liêm, Hà Nội</p>
+                <p><strong>Cơ sở 2:</strong> Quảng Ninh</p>
+                <p><strong>Cơ sở 3:</strong> Vũng Tàu</p>
+                <p><strong>Điện thoại:</strong> <a href="tel:0342518138">0342518138</a></p>
+                <p><strong>Email:</strong> <a href="mailto:info@winemartclone.com">info@winemartclone.com</a></p>
+                <p><strong>Giờ mở cửa:</strong> 9:00 - 21:00, Thứ Hai - Chủ Nhật</p>
+                
+                <div class="social-links">
+                    <a href="https://www.facebook.com/thanh.nguyenluu.79827" target="_blank" rel="noopener noreferrer" title="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/thanh_nguyenluu" target="_blank" rel="noopener noreferrer" title="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://zalo.me/0342518138" target="_blank" rel="noopener noreferrer" title="Zalo">
+                        <span class="zalo-icon-text">Z</span>
+                    </a>
+                    <a href="https://www.youtube.com/@ThanhNguyenLuu-18" target="_blank" rel="noopener noreferrer" title="YouTube">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="contact-form-container">
+                <h2>Gửi tin nhắn cho chúng tôi</h2>
+                <form action="/contact" method="POST" class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Họ và tên</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Nội dung tin nhắn</label>
+                        <textarea id="message" name="message" rows="6" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-auth">Gửi đi</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <h2>Vị trí cửa hàng trên bản đồ</h2>
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d59568.23711924477!2d105.6977113486328!3d21.072070300000014!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3134552defbed8e9%3A0x1584f79c805eb017!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBN4buPIC0gxJDhu4thIGNo4bqldA!5e0!3m2!1svi!2s!4v1760710978916!5m2!1svi!2s"
+                width="100%" 
+                height="450" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+
+    </div>
+    <%- include('partials/footer') %>
+    <div id="toast-container"></div>
+    
+    <script src="/js/notifications.js"></script> 
+    <script src="/js/cart.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>

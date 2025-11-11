@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - WineMart Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="age-gate-overlay" class="age-gate">
+        <div id="age-gate-modal">
+            <h2>WELCOME TO WINE MART</h2>
+            <p>Các sản phẩm của chúng tôi không dành cho người dưới 18 tuổi, phụ nữ đang mang thai.</p>
+            <p>Thưởng thức có trách nhiệm!</p>
+            <div class="age-gate-icons">
+                <img src="/images/pop-up-mo-dau-1.png" alt="Không dành cho phụ nữ mang thai">
+                <img src="/images/pop-up-mo-dau-2.png" alt="Không lái xe sau khi uống rượu">
+                <img src="/images/pop-up-mo-dau-3.png" alt="Chỉ dành cho người trên 18 tuổi">
+            </div>
+            <button id="age-gate-close">ĐỒNG Ý</button>
+        </div>
+    </div>
+    <div id="auth-modal-overlay" class="auth-modal"> 
+        <div class="auth-modal-content">
+            <span class="close-auth-modal">&times;</span> 
+
+            <div class="auth-modal-image"></div>
+
+            <div class="auth-modal-form">
+                <div class="auth-container"> <h2>Đăng nhập</h2>
+                    <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+                        <p class="message success"><%= successMessage %></p>
+                    <% } %>
+                    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+                        <p class="message error"><%= errorMessage %></p>
+                    <% } %>
+                    <form action="/login" method="POST">
+                        <div class="form-group">
+                            <label for="email">Email</label> <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group password-group">
+                            <label for="password">Mật khẩu</label>
+                            <input type="password" id="password" name="password" required>
+                            <span class="toggle-password">👁️</span>
+                        </div>
+                        <button type="submit" class="btn-auth">Đăng nhập</button>
+                    </form>
+                    <p>Chưa có tài khoản? <a href="/register">Đăng ký tại đây</a></p> 
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/header') %> 
+    <main></main>
+    <script src="/js/auth.js"></script>
+    <script src="/js/ageGate.js"></script>
+    <script src="/js/authModal.js"></script>
+    <script src="/js/header.js"></script>
+</body>
+</html>
