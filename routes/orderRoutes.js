@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const moment = require('moment');
+const net = require('net');
 const querystring = require('qs');
-const { v4: uuidv4 } = require('uuid');
 
 const Order = require('../models/orderModel');
 const User = require('../models/userModel');
@@ -13,21 +13,48 @@ const { requireLogin } = require('../middleware/authMiddleware');
 // === HÀM sortObject CHUẨN TỪ VNPAY DEMO ===
 // Hàm này sắp xếp các key VÀ mã hóa (encode) các giá trị
 function sortObject(obj) {
-    let sorted = {};
-    let str = [];
-    let key;
-    for (key in obj){
-        // Dùng cách gọi an toàn, đã sửa ở lần trước
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            str.push(encodeURIComponent(key));
+    const sorted = {};
+    const keys = Object.keys(obj).sort();
+
+    keys.forEach((key) => {
+        if (typeof obj[key] === 'undefined' || obj[key] === null) {
+            return;
         }
-    }
-    str.sort(); // Sắp xếp key
-    for (key = 0; key < str.length; key++) {
-        // Gán value đã được mã hóa
-        sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
-    }
+        sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, "+");
+    });
     return sorted;
+}
+
+function getClientIp(req) {
+    const forwarded = req.headers['x-forwarded-for'];
+    const rawIp = (typeof forwarded === 'string' && forwarded.split(',')[0].trim())
+        || req.connection?.remoteAddress
+        || req.socket?.remoteAddress
+        || req.connection?.socket?.remoteAddress
+        || '';
+
+    if (!rawIp) {
+        return '127.0.0.1';
+    }
+
+    if (rawIp.startsWith('::ffff:')) {
+        return rawIp.substring(7);
+    }
+    if (rawIp === '::1' || rawIp === '0:0:0:0:0:0:0:1') {
+        return '127.0.0.1';
+    }
+    if (net.isIP(rawIp) === 6) {
+        // VNPay yêu cầu IPv4, nếu nhận IPv6 thì trả về 127.0.0.1 để tránh lỗi 99
+        return '127.0.0.1';
+    }
+
+    return rawIp;
+}
+// VNPay chỉ chấp nhận vnp_TxnRef tối đa 20 ký tự dạng chữ/ số.
+function generateOrderId() {
+    const datePart = moment().format('YYMMDDHHmmss');
+    const randomPart = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+    return (datePart + randomPart).substring(0, 20);
 }
 
 // === CÁC ROUTE CHÍNH ===
@@ -61,7 +88,7 @@ router.post('/create-payment', requireLogin, async (req, res) => {
         });
 
         const order = new Order({
-            orderId: uuidv4(),
+            orderId: generateOrderId(),
             user: req.session.userId,
             customerInfo,
             items,
@@ -79,19 +106,22 @@ router.post('/create-payment', requireLogin, async (req, res) => {
             return res.render('order-success', { message: "Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng." });
         }
 
-        if (paymentMethod === 'vnpay') {
-            process.env.TZ = 'Asia/Ho_Chi_Minh';
-            
+        if (paymentMethod === 'vnpay') {            
             const tmnCode = process.env.VNPAY_TMNCODE;
             const secretKey = process.env.VNPAY_HASHSECRET;
             let vnpUrl = process.env.VNPAY_URL;
-            
-            const ipAddr = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null)).split(',')[0].replace('::ffff:', '');
-            
+            if (!tmnCode || !secretKey || !vnpUrl) {
+                throw new Error('Thiếu cấu hình VNPay (VNPAY_TMNCODE, VNPAY_HASHSECRET hoặc VNPAY_URL)');
+            }
+            const ipAddr = getClientIp(req);           
             // Lấy URL ngrok của bạn (hãy đảm bảo nó là URL https)
-            const returnUrl = "https://parker-tritheistical-glancingly.ngrok-free.dev/order/vnpay_return"; 
-            const ipnUrl = "https://parker-tritheistical-glancingly.ngrok-free.dev/order/vnpay_ipn";
-            const createDate = moment(new Date()).format('YYYYMMDDHHmmss');
+            const returnUrl = process.env.VNPAY_RETURNURL || "https://parker-tritheistical-glancingly.ngrok-free.dev/order/vnpay_return";
+            const ipnUrl = process.env.VNPAY_IPNURL || "https://parker-tritheistical-glancingly.ngrok-free.dev/order/vnpay_ipn";
+            if (!returnUrl.startsWith('https://') || !ipnUrl.startsWith('https://')) {
+                throw new Error('VNPay yêu cầu ReturnUrl và IpnUrl phải là HTTPS công khai.');
+            }
+            const createDate = moment().utcOffset(7 * 60).format('YYYYMMDDHHmmss');
+            const expireDate = moment().utcOffset(7 * 60).add(15, 'minutes').format('YYYYMMDDHHmmss');
             
             let vnp_Params = {};
             vnp_Params['vnp_Version'] = '2.1.0';
@@ -102,12 +132,12 @@ router.post('/create-payment', requireLogin, async (req, res) => {
             vnp_Params['vnp_TxnRef'] = order.orderId;
             vnp_Params['vnp_OrderInfo'] = 'Thanh toan don hang ' + order.orderId;
             vnp_Params['vnp_OrderType'] = 'other';
-            vnp_Params['vnp_Amount'] = amount * 100;
+            vnp_Params['vnp_Amount'] = Math.round(amount * 100).toString();
             vnp_Params['vnp_ReturnUrl'] = returnUrl;
             vnp_Params['vnp_IpAddr'] = ipAddr;
             vnp_Params['vnp_CreateDate'] = createDate;
             vnp_Params['vnp_IpnUrl'] = ipnUrl; // Thêm IPN URL
-
+            vnp_Params['vnp_ExpireDate'] = expireDate;
             // BƯỚC 1: Sắp xếp và mã hóa các tham số (Giống hệt demo)
             vnp_Params = sortObject(vnp_Params);
 
