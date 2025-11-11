@@ -27,6 +27,20 @@
         <h1><%= typeof message !== 'undefined' ? message : 'Trạng thái đơn hàng' %></h1>
         
         <p style="margin: 2rem 0;">Cảm ơn bạn đã mua sắm tại WineMart. Chúng tôi sẽ liên hệ với bạn sớm nhất.</p>
+        <% if (typeof orderId !== 'undefined') { %>
+            <p>Mã đơn hàng của bạn: <strong><%= orderId %></strong></p>
+        <% } %>
+
+        <% if (typeof responseCode !== 'undefined') { %>
+            <p>Mã phản hồi từ VNPay: <strong><%= responseCode %></strong></p>
+            <% if (responseCode !== '00') { %>
+                <p>VNPay có thể đang gặp sự cố (mã 99 thường là lỗi cấu hình hoặc kết nối). Bạn có thể thử thanh toán lại sau hoặc chuyển sang phương thức thanh toán khi nhận hàng.</p>
+            <% } %>
+        <% } %>
+
+        <% if (typeof bankCode !== 'undefined' && bankCode) { %>
+            <p>Ngân hàng: <strong><%= bankCode %></strong></p>
+        <% } %>
         <a href="/" class="btn-add-new" style="background-color: #c5a47e; text-decoration: none;">Quay về trang chủ</a>
     </div>
 
