@@ -24,6 +24,7 @@ const reviewSchema = new mongoose.Schema({
 }, {
     timestamps: true // Bật timestamps (createdAt, updatedAt) cho sub-document này
 });
+
 const accessorySchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     category: {
@@ -34,6 +35,15 @@ const accessorySchema = new mongoose.Schema({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
+
+    // ✅ Tồn kho phụ kiện
+    stock: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 0
+    },
+
     reviews: [reviewSchema]
 }, { timestamps: true });
 

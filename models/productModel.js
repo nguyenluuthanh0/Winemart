@@ -61,6 +61,15 @@ const productSchema = new mongoose.Schema({
         type: Number, // Dung tích, ví dụ: 750 (ml)
         required: true
     },
+
+    // ✅ Tồn kho rượu
+    stock: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 0
+    },
+
     reviews: [reviewSchema]
 }, {
     timestamps: true // Tự động thêm 2 trường: createdAt và updatedAt
