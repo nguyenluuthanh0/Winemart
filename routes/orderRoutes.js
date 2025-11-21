@@ -11,7 +11,7 @@ const Order = require("../models/orderModel");
 const User = require("../models/userModel");
 const { requireLogin } = require("../middleware/authMiddleware");
 
-// ✅ thêm các model sản phẩm để trừ tồn kho
+//  thêm các model sản phẩm để trừ tồn kho
 const Product = require("../models/productModel");
 const Accessory = require("../models/accessoryModel");
 const GiftSet = require("../models/giftSetModel");
