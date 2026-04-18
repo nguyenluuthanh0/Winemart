@@ -299,15 +299,10 @@ router.get("/vnpay_return", async (req, res) => {
       message: "Thanh toán thành công!",
       orderId,
       bankCode,
-      responseCode: "00",
     });
   }
 
-  return res.render("order-failed", {
-    message: "Thanh toán không thành công hoặc không hợp lệ.",
-    orderId,
-    bankCode,
-  });
+  return res.render("cart");
 });
 
 // VNPay IPN — cập nhật trạng thái & trừ tồn kho (idempotent)
