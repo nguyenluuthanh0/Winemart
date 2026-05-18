@@ -5,6 +5,7 @@ const Product = require('../models/productModel');
 const { isAdmin } = require('../middleware/authMiddleware');
 const Accessory = require('../models/accessoryModel'); 
 const GiftSet = require('../models/giftSetModel');   
+const Order = require('../models/orderModel');
 
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
 router.use(isAdmin);
@@ -34,6 +35,17 @@ router.get('/', async (req, res) => {
 
         const allItems = [...products, ...accessories, ...giftSets];
         allItems.sort((a, b) => b.createdAt - a.createdAt);
+
+        // THÊM MỚI: Truy vấn dữ liệu thống kê
+        const totalOrders = await Order.countDocuments();
+        const totalProducts = allItems.length;
+        
+        // Tính tổng doanh thu từ các đơn hàng 'Completed' (Hoàn thành)
+        const revenueResult = await Order.aggregate([
+            { $match: { status: 'Completed' } },
+            { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+        ]);
+        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
         // Trả về cả danh sách đã lọc VÀ từ khóa tìm kiếm để hiển thị lại
         res.render('admin/dashboard', { 
@@ -148,3 +160,30 @@ router.post('/delete-item/:type/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+// GET /admin/orders -> Hiển thị danh sách đơn hàng
+router.get('/orders', async (req, res) => {
+    try {
+        // Lấy tất cả đơn hàng, đơn mới nhất lên đầu, lấy thêm thông tin người mua (email, fullName)
+        const orders = await Order.find()
+            .sort({ createdAt: -1 })
+            .populate('userId', 'fullName email phone'); 
+        
+        res.render('admin/orders', { orders });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});
+
+// POST /admin/orders/update-status -> Cập nhật trạng thái
+router.post('/orders/update-status', async (req, res) => {
+    try {
+        const { orderId, newStatus } = req.body;
+        await Order.findByIdAndUpdate(orderId, { status: newStatus });
+        res.redirect('/admin/orders');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});

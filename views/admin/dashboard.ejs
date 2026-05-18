@@ -10,6 +10,25 @@
     <%- include('../partials/header') %>
     
     <div class="container">
+        <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+            <a href="/admin" style="margin-right: 20px; font-weight: bold; color: #800020; text-decoration: none; font-size: 18px;">📦 Sản phẩm & Thống kê</a>
+            <a href="/admin/orders" style="font-weight: bold; color: #555; text-decoration: none; font-size: 18px;">🛒 Quản lý Đơn hàng</a>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px;">
+            <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="margin: 0; color: #666;">Tổng Sản Phẩm</h3>
+                <p style="font-size: 28px; font-weight: bold; color: #333; margin: 10px 0 0 0;"><%= totalProducts %></p>
+            </div>
+            <div style="flex: 1; background: #e3f2fd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="margin: 0; color: #1976d2;">Tổng Đơn Hàng</h3>
+                <p style="font-size: 28px; font-weight: bold; color: #1565c0; margin: 10px 0 0 0;"><%= totalOrders %></p>
+            </div>
+            <div style="flex: 1; background: #e8f5e9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="margin: 0; color: #2e7d32;">Doanh Thu (Hoàn thành)</h3>
+                <p style="font-size: 28px; font-weight: bold; color: #1b5e20; margin: 10px 0 0 0;"><%= new Intl.NumberFormat('vi-VN').format(totalRevenue) %> ₫</p>
+            </div>
+        </div>
         <div class="admin-header">
             <h1>Quản lý Sản phẩm</h1>
             <a href="/admin/add-product" class="btn-add-new">Thêm sản phẩm mới</a>

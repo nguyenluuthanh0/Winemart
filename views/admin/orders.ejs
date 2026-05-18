@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Quản lý Đơn hàng - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="container">
+        <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 20px;">
+            <a href="/admin" style="margin-right: 20px; font-weight: bold; color: #555; text-decoration: none; font-size: 18px;">📦 Sản phẩm & Thống kê</a>
+            <a href="/admin/orders" style="font-weight: bold; color: #800020; text-decoration: none; font-size: 18px;">🛒 Quản lý Đơn hàng</a>
+        </div>
+
+        <div class="admin-header">
+            <h1>Danh sách Đơn hàng</h1>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Hình thức</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if(orders && orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                        <tr>
+                            <td><small><%= order._id %></small></td>
+                            <td>
+                                <strong><%= order.userId ? order.userId.fullName : 'Khách vãng lai' %></strong><br>
+                                <small><%= order.shippingAddress %></small>
+                            </td>
+                            <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
+                            <td style="color: red; font-weight: bold;"><%= new Intl.NumberFormat('vi-VN').format(order.totalAmount) %> ₫</td>
+                            <td><%= order.paymentMethod %></td>
+                            <td>
+                                <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
+                                    <input type="hidden" name="orderId" value="<%= order._id %>">
+                                    <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Chờ xử lý</option>
+                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Đang giao</option>
+                                        <option value="Completed" <%= order.status === 'Completed' ? 'selected' : '' %>>Hoàn thành</option>
+                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Đã hủy</option>
+                                    </select>
+                                    <button type="submit" class="btn-edit" style="padding: 5px 10px;">Lưu</button>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="#" class="btn-add-new" style="padding: 5px 10px;">Xem Chi Tiết</a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px;">Chưa có đơn hàng nào.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
