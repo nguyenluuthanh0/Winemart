@@ -2154,3 +2154,143 @@ body {
     background-color: #0f3e91;
     transform: translateY(-1px);
 }
+/* =========================================
+   GIAO DIỆN CHATBOT AI WINEMART
+========================================= */
+
+/* Nút mở Chatbot ở góc phải màn hình */
+.chat-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #800020; /* Màu đỏ đô sang trọng */
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.chat-toggle-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Khung cửa sổ Chatbot chính */
+.chat-container {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 380px;
+    height: 500px;
+    background-color: #ffffff; /* Nền trắng */
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    
+    /* Bỏ resize mặc định vì không hoạt động tốt khi fixed bottom-right */
+    overflow: hidden;
+
+    /* Giới hạn để không bị kéo méo xệch */    min-width: 320px;
+    min-height: 400px;
+    max-width: 800px;
+    max-height: 85vh;
+}
+
+/* Class dùng để hiển thị khung chat qua JavaScript */
+.chat-container.show {
+    display: flex;
+}
+
+/* Phần Header của khung chat */
+.chat-header {
+    background-color: #800020;
+    color: white;
+    padding: 15px 20px;
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Phần thân chứa nội dung tin nhắn */
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto; /* Tự động có thanh cuộn nếu tin nhắn dài */
+    background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Định dạng chung cho tin nhắn */
+.chat-message {
+    max-width: 85%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* Tin nhắn của Bot (Bên trái) */
+.bot-message {
+    background-color: #e2e8f0;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+/* Tin nhắn của User (Bên phải) */
+.user-message {
+    background-color: #800020;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+/* Phần nhập dữ liệu (Footer) */
+.chat-footer {
+    display: flex;
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    border-bottom-right-radius: 12px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chat-send-btn {
+    background-color: #800020;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    margin-left: 10px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+}

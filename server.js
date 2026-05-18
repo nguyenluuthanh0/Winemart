@@ -73,6 +73,12 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// Nhúng route chatbot
+const chatRoutes = require('./routes/chatRoutes');
+
+// Khai báo sử dụng route
+app.use('/', chatRoutes);
+
 // Sử dụng routes
 app.use('/products', productRoutes);
 app.use('/admin', adminRoutes);

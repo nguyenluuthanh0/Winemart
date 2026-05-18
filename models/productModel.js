@@ -69,10 +69,21 @@ const productSchema = new mongoose.Schema({
         min: 0,
         default: 0
     },
+    inStock: {
+        type: Boolean,
+        default: false
+    },
 
     reviews: [reviewSchema]
 }, {
     timestamps: true // Tự động thêm 2 trường: createdAt và updatedAt
+});
+
+// Middleware: Tự động cập nhật inStock trước khi lưu vào DB
+productSchema.pre('save', function(next) {
+    // Nếu số lượng > 0 thì inStock là true, ngược lại là false
+    this.inStock = this.stock > 0;
+    next();
 });
 
 // Tạo Model từ Schema

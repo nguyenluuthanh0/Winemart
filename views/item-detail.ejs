@@ -41,7 +41,14 @@
                 </div>
 
                 <p class="description"><%= item.description %></p>
-
+                <p class="stock-info">
+                    Trạng thái: 
+                    <% if (item.stock > 0) { %>
+                        <span style="color: green;">Còn hàng (<%= item.stock %> sản phẩm)</span>
+                    <% } else { %>
+                        <span style="color: red;">Hết hàng</span>
+                    <% } %>
+                </p>
                 <button class="btn-add-to-cart" onclick="addToCart('<%= item._id %>', '<%= item.constructor.modelName %>')">Thêm vào giỏ</button>
             </div>
         </div>

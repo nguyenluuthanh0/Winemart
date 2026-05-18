@@ -44,9 +44,20 @@ const giftSetSchema = new mongoose.Schema({
         min: 0,
         default: 0
     },
+    inStock: {
+        type: Boolean,
+        default: false
+    },
 
     reviews: [reviewSchema]
 }, { timestamps: true });
+
+// Middleware: Tự động cập nhật inStock trước khi lưu vào DB
+giftSetSchema.pre('save', function(next) {
+    // Nếu số lượng > 0 thì inStock là true, ngược lại là false
+    this.inStock = this.stock > 0;
+    next();
+});
 
 const GiftSet = mongoose.model('GiftSet', giftSetSchema);
 

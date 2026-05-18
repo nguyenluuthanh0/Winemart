@@ -168,6 +168,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    const chatCloseBtn = document.getElementById('chatCloseBtn');
+    const chatContainer = document.getElementById('chatContainer');
+
+    // Mở khung chat
+    chatToggleBtn.addEventListener('click', () => {
+        chatContainer.classList.add('show');
+        chatToggleBtn.style.display = 'none'; // Ẩn nút mở khi đang chat
+    });
+
+    // Đóng khung chat
+    chatCloseBtn.addEventListener('click', () => {
+        chatContainer.classList.remove('show');
+        chatToggleBtn.style.display = 'block'; // Hiện lại nút mở
+    });
+
     // Lần tải trang đầu tiên, fetch trang 1 (không có bộ lọc)
     updateProducts(1);
 });
