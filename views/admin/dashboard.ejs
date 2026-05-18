@@ -4,31 +4,22 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    
+    <style>
+        .main-header {
+            position: relative !important;
+            z-index: 9999 !important;
+        }
+        .user-dropdown {
+            z-index: 10000 !important;
+        }
+    </style>
 </head>
 <body>
     <%- include('../partials/header') %>
     
-    <div class="container">
-        <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
-            <a href="/admin" style="margin-right: 20px; font-weight: bold; color: #800020; text-decoration: none; font-size: 18px;">📦 Sản phẩm & Thống kê</a>
-            <a href="/admin/orders" style="font-weight: bold; color: #555; text-decoration: none; font-size: 18px;">🛒 Quản lý Đơn hàng</a>
-        </div>
+    <div class="container" style="margin-top: 20px;">
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px;">
-            <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
-                <h3 style="margin: 0; color: #666;">Tổng Sản Phẩm</h3>
-                <p style="font-size: 28px; font-weight: bold; color: #333; margin: 10px 0 0 0;"><%= totalProducts %></p>
-            </div>
-            <div style="flex: 1; background: #e3f2fd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
-                <h3 style="margin: 0; color: #1976d2;">Tổng Đơn Hàng</h3>
-                <p style="font-size: 28px; font-weight: bold; color: #1565c0; margin: 10px 0 0 0;"><%= totalOrders %></p>
-            </div>
-            <div style="flex: 1; background: #e8f5e9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
-                <h3 style="margin: 0; color: #2e7d32;">Doanh Thu (Hoàn thành)</h3>
-                <p style="font-size: 28px; font-weight: bold; color: #1b5e20; margin: 10px 0 0 0;"><%= new Intl.NumberFormat('vi-VN').format(totalRevenue) %> ₫</p>
-            </div>
-        </div>
         <div class="admin-header">
             <h1>Quản lý Sản phẩm</h1>
             <a href="/admin/add-product" class="btn-add-new">Thêm sản phẩm mới</a>
@@ -55,22 +46,30 @@
                 </tr>
             </thead>
             <tbody>
-                <% items.forEach(item => { %>
-                    <% const itemType = item.constructor.modelName.toLowerCase() %>
+                <% if(items && items.length > 0) { %>
+                    <% items.forEach(item => { %>
+                        <% const itemType = item.constructor.modelName.toLowerCase() %>
+                        <tr>
+                            <td><%= item.name %></td>
+                            <td><%= item.category || item.type %></td>
+                            <td><%= new Intl.NumberFormat('vi-VN').format(item.price) %> ₫</td>
+                            <td class="actions">
+                                <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
+                                <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                    <button type="submit" class="btn-delete">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
                     <tr>
-                        <td><%= item.name %></td>
-                        <td><%= item.category || item.type %></td>
-                        <td><%= new Intl.NumberFormat('vi-VN').format(item.price) %> ₫</td>
-                        <td class="actions">
-                            <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
-                            <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
-                                <button type="submit" class="btn-delete">Xóa</button>
-                            </form>
-                        </td>
+                        <td colspan="4" style="text-align: center; padding: 20px;">Không tìm thấy sản phẩm nào phù hợp.</td>
                     </tr>
-                <% }) %>
+                <% } %>
             </tbody>
         </table>
     </div>
+
+    <script src="/js/header.js"></script>
 </body>
 </html>

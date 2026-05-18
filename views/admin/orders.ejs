@@ -3,18 +3,31 @@
 <head>
     <title>Quản lý Đơn hàng - Admin</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .main-header { position: relative !important; z-index: 9999 !important; }
+        .user-dropdown { z-index: 10000 !important; }
+    </style>
 </head>
 <body>
     <%- include('../partials/header') %>
     
-    <div class="container">
-        <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 20px;">
-            <a href="/admin" style="margin-right: 20px; font-weight: bold; color: #555; text-decoration: none; font-size: 18px;">📦 Sản phẩm & Thống kê</a>
-            <a href="/admin/orders" style="font-weight: bold; color: #800020; text-decoration: none; font-size: 18px;">🛒 Quản lý Đơn hàng</a>
-        </div>
-
-        <div class="admin-header">
-            <h1>Danh sách Đơn hàng</h1>
+    <div class="container" style="margin-top: 20px;">
+        <div class="admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h1 style="margin: 0; font-size: 22px;">Danh sách Đơn hàng</h1>
+            
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="statusFilter" style="font-weight: bold; color: #555; font-size: 14px;">
+                    <i class="fas fa-filter"></i> Lọc theo:
+                </label>
+                <select id="statusFilter" onchange="filterOrders(this.value)" style="padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500; cursor: pointer; outline: none;">
+                    <option value="all" <%= typeof statusFilter !== 'undefined' && statusFilter === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+                    <option value="pending" <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'selected' : '' %>>Chờ xử lý (Mới)</option>
+                    <option value="processing" <%= typeof statusFilter !== 'undefined' && statusFilter === 'processing' ? 'selected' : '' %>>Đang giao hàng</option>
+                    <option value="completed" <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'selected' : '' %>>Đã hoàn thành</option>
+                    <option value="cancelled" <%= typeof statusFilter !== 'undefined' && statusFilter === 'cancelled' ? 'selected' : '' %>>Đơn đã hủy</option>
+                </select>
+            </div>
         </div>
 
         <table class="admin-table">
@@ -25,36 +38,43 @@
                     <th>Ngày đặt</th>
                     <th>Tổng tiền</th>
                     <th>Hình thức</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
+                    <th>Trạng thái / Cập nhật</th>
+                    <th>Chi tiết</th>
                 </tr>
             </thead>
             <tbody>
                 <% if(orders && orders.length > 0) { %>
                     <% orders.forEach(order => { %>
                         <tr>
-                            <td><small><%= order._id %></small></td>
+                            <td><small style="color: #666;"><%= order.orderId || order._id.toString().slice(-6) %></small></td>
                             <td>
-                                <strong><%= order.userId ? order.userId.fullName : 'Khách vãng lai' %></strong><br>
-                                <small><%= order.shippingAddress %></small>
+                                <strong><%= order.customerInfo ? order.customerInfo.name : 'Khách vãng lai' %></strong><br>
+                                <small style="color: #666;"><%= order.customerInfo ? order.customerInfo.phone : '' %></small>
                             </td>
                             <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
-                            <td style="color: red; font-weight: bold;"><%= new Intl.NumberFormat('vi-VN').format(order.totalAmount) %> ₫</td>
-                            <td><%= order.paymentMethod %></td>
+                            <td style="color: #800020; font-weight: bold;"><%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫</td>
+                            <td style="text-transform: uppercase;"><%= order.paymentMethod %></td>
+                            
                             <td>
                                 <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
                                     <input type="hidden" name="orderId" value="<%= order._id %>">
-                                    <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Chờ xử lý</option>
-                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Đang giao</option>
-                                        <option value="Completed" <%= order.status === 'Completed' ? 'selected' : '' %>>Hoàn thành</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Đã hủy</option>
+                                    <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500;
+                                        background-color: 
+                                            <%= order.status === 'pending' ? '#fff3cd' : 
+                                                order.status === 'processing' ? '#cce5ff' : 
+                                                order.status === 'completed' ? '#d4edda' : '#f8d7da' %>;
+                                    ">
+                                        <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
+                                        <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang giao</option>
+                                        <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
+                                        <option value="cancelled" <%= order.status === 'cancelled' || order.status === 'failed' ? 'selected' : '' %>>Đã hủy</option>
                                     </select>
                                     <button type="submit" class="btn-edit" style="padding: 5px 10px;">Lưu</button>
                                 </form>
                             </td>
+                            
                             <td>
-                                <a href="#" class="btn-add-new" style="padding: 5px 10px;">Xem Chi Tiết</a>
+                                <a href="/admin/order-detail/<%= order._id %>" class="btn-add-new" style="padding: 5px 10px;">Xem Chi Tiết</a>
                             </td>
                         </tr>
                     <% }) %>
@@ -66,5 +86,13 @@
             </tbody>
         </table>
     </div>
+
+    <script src="/js/header.js"></script>
+    <script>
+        function filterOrders(status) {
+            // Tự động chuyển hướng URL theo trạng thái đã chọn
+            window.location.href = `/admin/orders?status=${status}`;
+        }
+    </script>
 </body>
 </html>

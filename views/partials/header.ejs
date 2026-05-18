@@ -7,7 +7,7 @@
 
         <nav class="main-nav">
             <ul>
-                <li><a href="/">Home</a></li>
+                <li><a href="/">Trang chủ</a></li>
                 <li class="dropdown">
                     <a href="/products/category-overview/phu-kien-ruou">Phụ kiện rượu</a>
                     <ul class="dropdown-menu">
@@ -41,6 +41,7 @@
                 </form>
                 <div id="live-search-results" class="live-search-results"></div>
             </div>
+            
             <div class="header-user-icon" id="user-icon-wrapper">
                 <% if (currentUser) { %>
                     <a href="#" id="user-icon" class="header-icon" title="Tài khoản">
@@ -49,8 +50,14 @@
                     <div class="user-dropdown" id="user-dropdown">
                         <div class="user-dropdown-header">Chào, <%= currentUser.email %></div>
                         <a href="/my-orders">Đơn hàng của tôi</a>
+                        
                         <% if (currentUser.role === 'admin') { %>
-                            <a href="/admin">Trang Admin</a>
+                            <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;"></div>
+                            <div style="padding: 5px 15px; font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase;">Quản trị viên</div>
+                            <a href="/admin" style="color: #800020; font-weight: 500;">📦 Quản lý Sản phẩm</a>
+                            <a href="/admin/orders" style="color: #800020; font-weight: 500;">🛒 Quản lý Đơn hàng</a>
+                            <a href="/admin/statistics" style="color: #800020; font-weight: 500;">📊 Thống kê</a>
+                            <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;"></div>
                         <% } %>
                         <a href="/logout">Đăng xuất</a>
                     </div>

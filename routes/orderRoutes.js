@@ -171,7 +171,7 @@ router.post("/create-payment", requireLogin, async (req, res) => {
         await ci.item.save();
       }
 
-      order.status = "processing";
+      order.status = "pending";
       await order.save();
       user.cart = [];
       await user.save();
@@ -291,7 +291,7 @@ router.get("/vnpay_return", async (req, res) => {
 
     order.paid = true;
     order.paidAt = new Date();
-    order.status = "completed";
+    order.status = "pending";
     await order.save();
     if (order.user)
       await User.updateOne({ _id: order.user }, { $set: { cart: [] } });
@@ -349,7 +349,7 @@ router.all("/vnpay_ipn", async (req, res) => {
       order.paymentMethod = "vnpay";
       order.paid = true;
       order.paidAt = new Date();
-      order.status = "completed";
+      order.status = "pending";
       await order.save();
       if (order.user)
         await User.updateOne({ _id: order.user }, { $set: { cart: [] } });
@@ -375,17 +375,6 @@ router.get("/detail/:orderId", requireLogin, async (req, res) => {
       user: req.session.userId,
     }).populate("items.item");
     if (!order) return res.redirect("/my-orders");
-
-    // Auto complete COD sau 10s
-    const tenSecondsAgo = Date.now() - 10 * 1000;
-    if (
-      order.paymentMethod === "cod" &&
-      order.status === "processing" &&
-      order.createdAt.getTime() < tenSecondsAgo
-    ) {
-      order.status = "completed";
-      await order.save();
-    }
 
     // Vá mềm VNPay
     if (order.paymentMethod === "vnpay" && order.paid && order.status !== "completed") {

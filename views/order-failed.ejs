@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán thất bại - Winemart</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container" style="min-height: 50vh; display: flex; align-items: center; justify-content: center;">
+        <div style="background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%;">
+            
+            <i class="fas fa-times-circle" style="font-size: 60px; color: #dc3545; margin-bottom: 20px;"></i>
+            
+            <h1 style="color: #333; margin-bottom: 10px; font-size: 24px;">Thanh toán không thành công!</h1>
+            
+            <p style="color: #666; margin-bottom: 25px; line-height: 1.5;">
+                Rất tiếc, quá trình thanh toán đơn hàng của bạn đã bị hủy hoặc xảy ra lỗi sự cố từ hệ thống. 
+                <br>
+                <strong>Chi tiết lỗi:</strong> <%= typeof message !== 'undefined' ? message : 'Lỗi kết nối cổng thanh toán VNPay' %>
+            </p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="/cart" class="btn-edit" style="text-decoration: none; padding: 10px 20px;">Quay lại Giỏ hàng</a>
+                <a href="/" class="btn-add-new" style="text-decoration: none; padding: 10px 20px;">Về Trang chủ</a>
+            </div>
+            
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="/js/header.js"></script>
+</body>
+</html>

@@ -2294,3 +2294,17 @@ body {
     cursor: pointer;
     font-weight: bold;
 }
+/* --- CSS CHO QUẢN LÝ ĐƠN HÀNG (ADMIN) --- */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 13px;
+    display: inline-block;
+}
+
+/* Màu sắc tương ứng với 4 trạng thái đơn hàng */
+.status-Pending { background-color: #fff3cd; color: #856404; }    /* Vàng: Chờ xử lý */
+.status-Processing { background-color: #cce5ff; color: #004085; } /* Xanh lam: Đang giao */
+.status-Completed { background-color: #d4edda; color: #155724; }  /* Xanh lá: Hoàn thành */
+.status-Cancelled { background-color: #f8d7da; color: #721c24; }  /* Đỏ: Đã hủy */
