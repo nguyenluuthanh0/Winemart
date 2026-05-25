@@ -46,21 +46,32 @@
                                 <td>#<%= order.orderId.substring(0, 8) %>...</td>
                                 <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
                                 <td><%= new Intl.NumberFormat('vi-VN').format(order.amount) %> ₫</td>
-                                <td>
-                                    <span class="order-status-badge status-<%= order.status %>">
-                                        <% if (order.status === 'pending') { %>
-                                            Chờ thanh toán
-                                        <% } else if (order.status === 'processing') { %>
-                                            Đang xử lý
-                                        <% } else if (order.status === 'completed') { %>
-                                            Hoàn thành
-                                        <% } else if (order.status === 'failed') { %>
-                                            Thất bại
-                                        <% } else if (order.status === 'cancelled') { %>
-                                            Đã hủy
-                                        <% } else { %>
-                                            <%= order.status %> <% } %>
-                                    </span>
+                                <td class="text-center align-middle">
+                                    <% if (order.status === 'pending') { %>
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill font-weight-bold">
+                                            <i class="fas fa-clock mr-1"></i> Chờ xử lý
+                                        </span>
+                                    <% } else if (order.status === 'processing') { %>
+                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill font-weight-bold">
+                                            <i class="fas fa-truck mr-1"></i> Đang giao hàng
+                                        </span>
+                                    <% } else if (order.status === 'completed') { %>
+                                        <span class="badge bg-success text-white px-3 py-2 rounded-pill font-weight-bold">
+                                            <i class="fas fa-check-circle mr-1"></i> Hoàn thành
+                                        </span>
+                                    <% } else if (order.status === 'failed') { %>
+                                        <span class="badge bg-danger text-white px-3 py-2 rounded-pill font-weight-bold">
+                                            <i class="fas fa-times-circle mr-1"></i> Thất bại
+                                        </span>
+                                    <% } else if (order.status === 'cancelled') { %>
+                                        <span class="badge bg-secondary text-white px-3 py-2 rounded-pill font-weight-bold">
+                                            <i class="fas fa-ban mr-1"></i> Đã hủy đơn
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-light text-dark px-3 py-2 rounded-pill border">
+                                            <%= order.status %>
+                                        </span>
+                                    <% } %>
                                 </td>
                                 <td>
                                     <a href="/order/detail/<%= order.orderId %>" class="btn-edit" style="text-decoration: none;">Xem</a>

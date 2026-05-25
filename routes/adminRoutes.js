@@ -10,8 +10,12 @@ const Order = require('../models/orderModel');
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
 router.use(isAdmin);
 
-// GET /admin -> Hiển thị trang dashboard VỚI CHỨC NĂNG TÌM KIẾM
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
+    res.redirect('/admin/dashboard');
+});
+
+// GET /admin/dashboard -> Hiển thị trang Bảng điều khiển / Quản lý sản phẩm
+router.get('/dashboard', async (req, res) => {
     try {
         // Lấy từ khóa tìm kiếm từ URL query
         const { search } = req.query;
@@ -36,18 +40,18 @@ router.get('/', async (req, res) => {
         const allItems = [...products, ...accessories, ...giftSets];
         allItems.sort((a, b) => b.createdAt - a.createdAt);
 
-        // THÊM MỚI: Truy vấn dữ liệu thống kê
+        // Truy vấn dữ liệu thống kê
         const totalOrders = await Order.countDocuments();
         const totalProducts = allItems.length;
         
         // Tính tổng doanh thu từ các đơn hàng 'Completed' (Hoàn thành)
         const revenueResult = await Order.aggregate([
-            { $match: { status: 'completed' } }, // Đã chuẩn hóa thành chữ thường
-            { $group: { _id: null, total: { $sum: '$amount' } } } // Sử dụng $amount thay vì $totalAmount
+            { $match: { status: 'completed' } },
+            { $group: { _id: null, total: { $sum: '$amount' } } } 
         ]);
         const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
-        // Trả về cả danh sách đã lọc VÀ từ khóa tìm kiếm để hiển thị lại
+        // Trả về view admin/dashboard
         res.render('admin/dashboard', { 
             items: allItems, 
             searchTerm: search || '',
@@ -70,18 +74,18 @@ router.get('/add-product', (req, res) => {
 // POST /admin/add-item -> Xử lý việc thêm mọi loại sản phẩm
 router.post('/add-item', async (req, res) => {
     try {
-        const { itemType, name, description, imageUrl, price } = req.body;
+        const { itemType, name, description, imageUrl, price, stock } = req.body;
 
         let newItem;
         if (itemType === 'product') {
             const { brand, origin, type, volume } = req.body;
-            newItem = new Product({ name, description, imageUrl, price, brand, origin, type, volume });
+            newItem = new Product({ name, description, imageUrl, price: Number(price), brand, origin, type, volume, stock: Number(stock || 0) });
         } else if (itemType === 'accessory') {
             const category = req.body.categoryAccessory;
-            newItem = new Accessory({ name, description, imageUrl, price, category });
+            newItem = new Accessory({ name, description, imageUrl, price: Number(price), category });
         } else if (itemType === 'giftset') {
             const category = req.body.categoryGiftSet;
-            newItem = new GiftSet({ name, description, imageUrl, price, category });
+            newItem = new GiftSet({ name, description, imageUrl, price: Number(price), category });
         }
 
         if (newItem) {
@@ -96,8 +100,8 @@ router.post('/add-item', async (req, res) => {
 // POST /admin/add-product -> Xử lý việc thêm sản phẩm mới
 router.post('/add-product', async (req, res) => {
     try {
-        const { name, brand, origin, type, description, imageUrl, price, volume } = req.body;
-        const newProduct = new Product({ name, brand, origin, type, description, imageUrl, price, volume });
+        const { name, brand, origin, type, description, imageUrl, price, volume, stock } = req.body;
+        const newProduct = new Product({ name, brand, origin, type, description, imageUrl, price, volume, stock: Number(stock || 0) });
         await newProduct.save();
         res.redirect('/admin');
     } catch (error) {
@@ -141,9 +145,24 @@ router.post('/edit-item/:type/:id', async (req, res) => {
     try {
         const { type, id } = req.params;
         const Model = getModelByType(type);
+        
         if (Model) {
-            // req.body chứa toàn bộ dữ liệu mới từ form
-            await Model.findByIdAndUpdate(id, req.body);
+            // Thay vì dùng findByIdAndUpdate, ta tìm item ra trước
+            const item = await Model.findById(id);
+            
+            if (item) {
+                // Cập nhật các trường dữ liệu từ form (req.body) vào item
+                Object.assign(item, req.body);
+                
+                // Đảm bảo trường stock là dạng số
+                if (req.body.stock) {
+                    item.stock = Number(req.body.stock);
+                }
+
+                // Gọi lệnh save() - Lúc này middleware pre('save') trong productModel.js sẽ tự động chạy
+                // để xét xem inStock là true hay false dựa vào số lượng stock mới
+                await item.save();
+            }
         }
         res.redirect('/admin');
     } catch (error) {
@@ -193,42 +212,54 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// POST: Cập nhật trạng thái đơn hàng (ĐÃ FIX LỖI ĐỒNG BỘ VÀ TRÙNG LẶP REDIRECT)
+// POST: Cập nhật trạng thái đơn hàng (DÙNG AJAX)
 router.post('/orders/update-status', async (req, res) => {
     try {
         const { orderId, newStatus } = req.body;
+        const normalizedNewStatus = newStatus.toLowerCase().trim();
         
-        // Khởi tạo đối tượng lưu các trường cần cập nhật, chuẩn hóa chữ thường
-        let updateData = { status: newStatus.toLowerCase().trim() };
+        const existingOrder = await Order.findById(orderId);
+        if (!existingOrder) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng." });
+        }
 
-        // Nếu Admin xác nhận đơn hàng đã "Hoàn thành" -> Tự động chuyển thành Đã thanh toán
+        const currentStatus = existingOrder.status;
+
+        // 1. KIỂM TRA RÀNG BUỘC
+        const finalStates = ['completed', 'cancelled', 'failed'];
+        if (finalStates.includes(currentStatus)) {
+            return res.status(400).json({ success: false, message: `Lỗi: Không thể đổi trạng thái của đơn hàng đã "${currentStatus}".` });
+        }
+        if (currentStatus === 'pending' && !['processing', 'completed', 'cancelled'].includes(normalizedNewStatus)) {
+            return res.status(400).json({ success: false, message: "Lỗi: Chuyển từ 'Chờ xử lý' sang trạng thái này không hợp lệ." });
+        }
+        if (currentStatus === 'processing' && !['completed', 'cancelled', 'failed'].includes(normalizedNewStatus)) {
+             return res.status(400).json({ success: false, message: "Lỗi: Chuyển từ 'Đang giao' sang trạng thái này không hợp lệ." });
+        }
+
+        // 2. CẬP NHẬT TRẠNG THÁI
+        let updateData = { status: normalizedNewStatus };
         if (updateData.status === 'completed') {
             updateData.paid = true;
-            // Chỉ cập nhật ngày giờ thanh toán nếu trước đó chưa có
-            const existingOrder = await Order.findById(orderId);
-            if (existingOrder && !existingOrder.paidAt) {
+            if (!existingOrder.paidAt) {
                 updateData.paidAt = new Date();
             }
         }
 
-        // Cập nhật vào cơ sở dữ liệu và ép Mongoose trả về bản ghi mới nhất
         await Order.findByIdAndUpdate(
             orderId, 
             { $set: updateData },
             { new: true, runValidators: true }
         );
         
-        // Dùng setTimeout chờ DB ghi xong hoàn toàn (200ms) rồi mới load lại trang
-        setTimeout(() => {
-            res.redirect(req.get('Referrer') || '/admin/orders');
-        }, 200);
+        // Trả về JSON thành công
+        return res.json({ success: true, message: "Cập nhật trạng thái thành công!" });
 
     } catch (error) {
         console.error("Lỗi khi cập nhật trạng thái:", error);
-        res.status(500).send("Lỗi Server");
+        res.status(500).json({ success: false, message: "Lỗi Server" });
     }
 });
-
 // --- THỐNG KÊ (STATISTICS) ---
 router.get('/statistics', async (req, res) => {
     try {

@@ -19,41 +19,185 @@
             <button id="age-gate-close">ĐỒNG Ý</button>
         </div>
     </div>
+    
     <div id="auth-modal-overlay" class="auth-modal"> 
         <div class="auth-modal-content">
             <span class="close-auth-modal">&times;</span> 
-
             <div class="auth-modal-image"></div>
 
             <div class="auth-modal-form">
-                <div class="auth-container"> <h2>Đăng nhập</h2>
+                
+                <div class="auth-container" id="login-container"> 
+                    <h2>Đăng nhập</h2>
                     <% if (typeof successMessage !== 'undefined' && successMessage) { %>
                         <p class="message success"><%= successMessage %></p>
                     <% } %>
                     <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
                         <p class="message error"><%= errorMessage %></p>
                     <% } %>
+                    
                     <form action="/login" method="POST">
                         <div class="form-group">
-                            <label for="email">Email</label> <input type="email" id="email" name="email" required>
+                            <label for="email">Email</label> 
+                            <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group password-group">
                             <label for="password">Mật khẩu</label>
                             <input type="password" id="password" name="password" required>
                             <span class="toggle-password">👁️</span>
                         </div>
+                        <div style="text-align: right; margin-bottom: 15px;">
+                            <a href="#" id="show-forgot-form" style="font-size: 0.9em; color: #800020;">Quên mật khẩu?</a>
+                        </div>
                         <button type="submit" class="btn-auth">Đăng nhập</button>
                     </form>
                     <p>Chưa có tài khoản? <a href="/register">Đăng ký tại đây</a></p> 
                 </div>
+
+                <div class="auth-container" id="forgot-email-container" style="display: none;"> 
+                    <h2>Quên mật khẩu</h2>
+                    <p style="font-size: 0.9em; margin-bottom: 15px;">Vui lòng nhập email của bạn để nhận mã OTP khôi phục.</p>
+                    
+                    <form id="forgot-email-form">
+                        <div class="form-group">
+                            <label for="forgotEmail">Email đã đăng ký</label> 
+                            <input type="email" id="forgotEmail" name="forgotEmail" required>
+                        </div>
+                        <button type="submit" class="btn-auth" id="btn-send-otp">Gửi mã OTP</button>
+                    </form>
+                    <p style="margin-top: 15px;"><a href="#" id="back-to-login">Quay lại đăng nhập</a></p> 
+                </div>
+
+                <div class="auth-container" id="reset-password-container" style="display: none;"> 
+                    <h2>Đặt lại mật khẩu</h2>
+                    <p style="font-size: 0.9em; margin-bottom: 15px;">Mã OTP đã được gửi đến email của bạn.</p>
+                    
+                    <form id="reset-password-form">
+                        <div class="form-group">
+                            <label for="otpCode">Mã OTP (6 số)</label> 
+                            <input type="text" id="otpCode" required maxlength="6">
+                        </div>
+                        <div class="form-group password-group">
+                            <label for="newPassword">Mật khẩu mới</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <button type="submit" class="btn-auth" id="btn-reset-pw">Xác nhận</button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
-    <%- include('partials/header') %> 
+    
+    <div id="toast-container"></div> <%- include('partials/header') %> 
     <main></main>
+    
+    <script src="/js/notifications.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/ageGate.js"></script>
     <script src="/js/authModal.js"></script>
     <script src="/js/header.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginContainer = document.getElementById('login-container');
+            const forgotEmailContainer = document.getElementById('forgot-email-container');
+            const resetPasswordContainer = document.getElementById('reset-password-container');
+            
+            const btnShowForgot = document.getElementById('show-forgot-form');
+            const btnBackToLogin = document.getElementById('back-to-login');
+            
+            const formForgotEmail = document.getElementById('forgot-email-form');
+            const formResetPassword = document.getElementById('reset-password-form');
+            const forgotEmailInput = document.getElementById('forgotEmail');
+
+            let savedEmail = ''; // Biến lưu tạm email người dùng vừa nhập
+
+            // 1. Chuyển từ Đăng nhập sang Quên mật khẩu
+            btnShowForgot.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginContainer.style.display = 'none';
+                forgotEmailContainer.style.display = 'block';
+            });
+
+            // 2. Nút Quay lại đăng nhập
+            btnBackToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                forgotEmailContainer.style.display = 'none';
+                loginContainer.style.display = 'block';
+            });
+
+            // 3. Gửi Email lấy OTP
+            formForgotEmail.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btnSubmit = document.getElementById('btn-send-otp');
+                savedEmail = forgotEmailInput.value.trim();
+
+                btnSubmit.innerText = "Đang gửi...";
+                btnSubmit.disabled = true;
+
+                try {
+                    const response = await fetch('/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: savedEmail })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        // Chuyển sang form nhập OTP
+                        forgotEmailContainer.style.display = 'none';
+                        resetPasswordContainer.style.display = 'block';
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (error) {
+                    showToast('Lỗi kết nối tới máy chủ', 'error');
+                } finally {
+                    btnSubmit.innerText = "Gửi mã OTP";
+                    btnSubmit.disabled = false;
+                }
+            });
+
+            // 4. Gửi OTP và Mật khẩu mới
+            formResetPassword.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const otp = document.getElementById('otpCode').value.trim();
+                const newPassword = document.getElementById('newPassword').value;
+                const btnSubmit = document.getElementById('btn-reset-pw');
+
+                btnSubmit.innerText = "Đang xử lý...";
+                btnSubmit.disabled = true;
+
+                try {
+                    const response = await fetch('/auth/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: savedEmail, otp, newPassword })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        // Đổi mật khẩu thành công, quay về form đăng nhập
+                        resetPasswordContainer.style.display = 'none';
+                        loginContainer.style.display = 'block';
+                        // Tự động điền sẵn email vào ô đăng nhập
+                        document.getElementById('email').value = savedEmail;
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (error) {
+                    showToast('Lỗi kết nối tới máy chủ', 'error');
+                } finally {
+                    btnSubmit.innerText = "Xác nhận";
+                    btnSubmit.disabled = false;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

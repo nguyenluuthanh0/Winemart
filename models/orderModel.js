@@ -33,6 +33,8 @@ const orderSchema = new mongoose.Schema({
         enum: ['cod', 'vnpay']
     },
 
+    paid: { type: Boolean, default: false },
+    paidAt: { type: Date },
     // Trạng thái đơn hàng
     status: {
         type: String,

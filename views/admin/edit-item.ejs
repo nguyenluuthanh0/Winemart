@@ -16,6 +16,10 @@
             <div class="form-group"><label>Mô tả</label><textarea name="description" required><%= item.description %></textarea></div>
             <div class="form-group"><label>Link ảnh</label><input type="text" name="imageUrl" value="<%= item.imageUrl %>" required></div>
             <div class="form-group"><label>Giá</label><input type="number" name="price" value="<%= item.price %>" required></div>
+            <div class="form-group">
+                <label>Số lượng kho</label>
+                <input type="number" name="stock" value="<%= item.stock || 0 %>" min="0" required>
+            </div>
 
             <% if (itemType === 'product') { %>
                 <div class="form-group"><label>Thương hiệu</label><input type="text" name="brand" value="<%= item.brand %>"></div>

@@ -98,7 +98,13 @@ router.post('/login', async (req, res) => {
         }
         
         req.session.userId = user._id;
-        res.redirect('/');
+        if (user.role === 'admin') {
+            // Nếu là Admin -> Đẩy thẳng vào Bảng điều khiển (Dashboard)
+            return res.redirect('/admin/dashboard'); 
+        } else {
+            // Nếu là User thường -> Đẩy về trang mua sắm
+            return res.redirect('/'); 
+        }
 
     } catch (error) {
         console.error(error);
@@ -300,6 +306,76 @@ router.post('/verify-otp', async (req, res) => {
         console.error("Lỗi xác thực OTP:", error);
         req.session.errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
         res.redirect('/verify-otp');
+    }
+});
+// POST: Yêu cầu gửi mã OTP khôi phục mật khẩu
+router.post('/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        // 1. Kiểm tra email có tồn tại không
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Email không tồn tại trong hệ thống." });
+        }
+
+        // 2. Sinh mã OTP ngẫu nhiên (6 chữ số)
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // 3. Lưu OTP và thời gian hết hạn (VD: 10 phút) vào DB
+        user.resetPasswordCode = otpCode;
+        user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        // 4. Gửi email chứa mã OTP
+        const subject = "Mã OTP khôi phục mật khẩu - WineMart";
+        const htmlContent = `
+            <h3>Xin chào,</h3>
+            <p>Bạn đã yêu cầu khôi phục mật khẩu tại WineMart.</p>
+            <p>Mã OTP của bạn là: <b style="font-size: 20px; color: #800020;">${otpCode}</b></p>
+            <p>Mã này sẽ hết hạn trong vòng 10 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
+        `;
+
+        await sendOTPEmail(user.email, otpCode);
+
+        // Chỉ khi gửi mail xong (không bị lỗi) thì mới báo thành công về giao diện
+        return res.json({ success: true, message: "Mã OTP đã được gửi đến email của bạn." });
+
+        return res.json({ success: true, message: "Mã OTP đã được gửi đến email của bạn." });
+
+    } catch (error) {
+        console.error("Lỗi gửi OTP quên mật khẩu:", error);
+        res.status(500).json({ success: false, message: "Lỗi Server." });
+    }
+});
+
+// POST: Xác nhận OTP và cập nhật mật khẩu mới
+router.post('/auth/reset-password', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        // 1. Tìm user theo email, mã OTP khớp và mã chưa hết hạn
+        const user = await User.findOne({
+            email: email.toLowerCase(),
+            resetPasswordCode: otp,
+            resetPasswordExpires: { $gt: Date.now() } // Phải lớn hơn thời gian hiện tại
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Mã OTP không hợp lệ hoặc đã hết hạn." });
+        }
+
+        // 3. Cập nhật mật khẩu và xóa các trường OTP
+        user.password = newPassword; 
+        user.resetPasswordCode = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return res.json({ success: true, message: "Khôi phục mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới." });
+
+    } catch (error) {
+        console.error("Lỗi đặt lại mật khẩu:", error);
+        res.status(500).json({ success: false, message: "Lỗi Server." });
     }
 });
 module.exports = router;

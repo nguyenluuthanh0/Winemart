@@ -1,4 +1,3 @@
-// models/userModel.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
@@ -18,7 +17,7 @@ const userSchema = new mongoose.Schema({
     role: { 
         type: String,
         enum: ['user', 'admin'], // Chỉ cho phép 2 giá trị này
-        default: 'user'         // Mặc định mọi tài khoản mới là 'user'
+        default: 'user' // Mặc định mọi tài khoản mới là 'user'
     },
     cart: [ // Là một mảng các sản phẩm trong giỏ
         {
@@ -49,8 +48,17 @@ const userSchema = new mongoose.Schema({
     },
     emailVerificationExpires: {
         type: Date,
+    },
+
+    // Các trường phục vụ chức năng Quên mật khẩu
+    resetPasswordCode: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
     }
-});
+
+}, { timestamps: true });
 
 // Hash mật khẩu trước khi lưu vào database
 // Đây là một Mongoose middleware, nó sẽ tự động chạy trước sự kiện 'save'

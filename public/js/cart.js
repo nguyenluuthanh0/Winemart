@@ -101,7 +101,7 @@ async function displayCartPage() {
                 </div>
                 <div class="cart-item-quantity-controls">
                     <button class="cart-item-quantity-btn" data-id="${item._id}" data-type="${itemModelString}" data-action="decrease">-</button>
-                    <input type="number" class="cart-item-quantity-input" value="${item.quantity}" min="1" readonly>
+                    <input type="number" class="cart-item-quantity-input" value="${item.quantity}" min="0" data-id="${item._id}" data-type="${itemModelString}">
                     <button class="cart-item-quantity-btn" data-id="${item._id}" data-type="${itemModelString}" data-action="increase">+</button>
                 </div>
                 <span class="cart-item-subtotal">${new Intl.NumberFormat('vi-VN').format(item.subtotal)} ₫</span>
@@ -300,6 +300,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng không?')) {
                     removeFromCart(itemId, itemType);
                 }
+            }
+        });
+        cartContainer.addEventListener('change', (event) => {
+            // Kiểm tra xem phần tử bị thay đổi có phải là ô nhập số lượng không
+            if (event.target.classList.contains('cart-item-quantity-input')) {
+                const inputElement = event.target;
+                const itemId = inputElement.dataset.id;
+                const itemType = inputElement.dataset.type;
+                let newQuantity = parseInt(inputElement.value);
+
+                // Kiểm tra tính hợp lệ: Nếu nhập chữ hoặc số âm thì tự động trả về 1
+                if (isNaN(newQuantity) || newQuantity < 0) {
+                    newQuantity = 1;
+                    inputElement.value = 1;
+                }
+
+                // Gọi API cập nhật (Hàm updateQuantity của bạn đã có sẵn logic: nếu = 0 thì sẽ tự gọi hàm xóa sản phẩm)
+                updateQuantity(itemId, itemType, newQuantity);
             }
         });
     }

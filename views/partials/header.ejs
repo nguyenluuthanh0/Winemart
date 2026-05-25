@@ -1,46 +1,55 @@
 <header class="main-header">
     <div class="container header-flex-container">
         
-        <a href="/" class="logo">
+        <a href="<%= (currentUser && currentUser.role === 'admin') ? '/admin/dashboard' : '/' %>" class="logo">
             <img src="/images/logo.png" alt="Winemart Logo">
         </a>
 
         <nav class="main-nav">
             <ul>
-                <li><a href="/">Trang chủ</a></li>
-                <li class="dropdown">
-                    <a href="/products/category-overview/phu-kien-ruou">Phụ kiện rượu</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="/products/category/Ly uống rượu">Ly uống rượu</a></li>
-                        <li><a href="/products/category/Tủ rượu đẹp">Tủ rượu đẹp</a></li>
-                        <li><a href="/products/category/Hộp đựng rượu">Hộp đựng rượu</a></li>
-                        <li><a href="/products/category/Đồ khui rượu">Đồ khui rượu</a></li>
-                        <li><a href="/products/category/Decanter (Bình thở rượu)">Decanter (Bình thở rượu)</a></li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="/products/category-overview/qua-tang">Quà Tặng</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="/products/category/Hộp quà rượu vang">Hộp quà rượu vang</a></li>
-                        <li><a href="/products/category/Quà tặng doanh nghiệp">Quà tặng doanh nghiệp</a></li>
-                        <li><a href="/products/category/Giỏ quà Tết">Giỏ quà Tết</a></li>
-                        <li><a href="/products/category/Phụ kiện quà tặng">Phụ kiện quà tặng</a></li>
-                    </ul>
-                </li>
-                <li><a href="/contact">Liên Hệ</a></li>
+                <% if (currentUser && currentUser.role === 'admin') { %>
+                    <li><a href="/admin">Sản phẩm</a></li>
+                    <li><a href="/admin/orders">Đơn hàng</a></li>
+                    <li><a href="/admin/statistics">Thống kê</a></li>
+                <% } else { %>
+                    <li><a href="/">Trang chủ</a></li>
+                    <li class="dropdown">
+                        <a href="/products/category-overview/phu-kien-ruou">Phụ kiện rượu</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/products/category/Ly uống rượu">Ly uống rượu</a></li>
+                            <li><a href="/products/category/Tủ rượu đẹp">Tủ rượu đẹp</a></li>
+                            <li><a href="/products/category/Hộp đựng rượu">Hộp đựng rượu</a></li>
+                            <li><a href="/products/category/Đồ khui rượu">Đồ khui rượu</a></li>
+                            <li><a href="/products/category/Decanter (Bình thở rượu)">Decanter (Bình thở rượu)</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="/products/category-overview/qua-tang">Quà Tặng</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/products/category/Hộp quà rượu vang">Hộp quà rượu vang</a></li>
+                            <li><a href="/products/category/Quà tặng doanh nghiệp">Quà tặng doanh nghiệp</a></li>
+                            <li><a href="/products/category/Giỏ quà Tết">Giỏ quà Tết</a></li>
+                            <li><a href="/products/category/Phụ kiện quà tặng">Phụ kiện quà tặng</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/contact">Liên Hệ</a></li>
+                <% } %>
             </ul>
         </nav>
 
         <div class="header-actions">
-            <div class="header-search-container">
-                <form action="/search" method="GET" class="header-search-form" autocomplete="off">
-                    <input type="search" name="q" id="header-search-input" placeholder="Tìm kiếm sản phẩm...">
-                    <button type="submit" class="header-search-button">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <div id="live-search-results" class="live-search-results"></div>
-            </div>
+            
+            <% if (!currentUser || currentUser.role !== 'admin') { %>
+                <div class="header-search-container">
+                    <form action="/search" method="GET" class="header-search-form" autocomplete="off">
+                        <input type="search" name="q" id="header-search-input" placeholder="Tìm kiếm sản phẩm...">
+                        <button type="submit" class="header-search-button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    <div id="live-search-results" class="live-search-results"></div>
+                </div>
+            <% } %>
             
             <div class="header-user-icon" id="user-icon-wrapper">
                 <% if (currentUser) { %>
@@ -49,17 +58,16 @@
                     </a>
                     <div class="user-dropdown" id="user-dropdown">
                         <div class="user-dropdown-header">Chào, <%= currentUser.email %></div>
-                        <a href="/my-orders">Đơn hàng của tôi</a>
                         
                         <% if (currentUser.role === 'admin') { %>
-                            <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;"></div>
                             <div style="padding: 5px 15px; font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase;">Quản trị viên</div>
-                            <a href="/admin" style="color: #800020; font-weight: 500;">📦 Quản lý Sản phẩm</a>
-                            <a href="/admin/orders" style="color: #800020; font-weight: 500;">🛒 Quản lý Đơn hàng</a>
-                            <a href="/admin/statistics" style="color: #800020; font-weight: 500;">📊 Thống kê</a>
-                            <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;"></div>
+                            <a href="/">🌐 Xem trang Cửa hàng</a>
+                        <% } else { %>
+                            <a href="/my-orders">📦 Đơn hàng của tôi</a>
                         <% } %>
-                        <a href="/logout">Đăng xuất</a>
+                        
+                        <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;"></div>
+                        <a href="/logout" style="color: #dc3545; font-weight: 500;">🚪 Đăng xuất</a>
                     </div>
                 <% } else { %>
                     <a href="/login" id="login-link" class="header-icon" title="Đăng nhập">
@@ -68,10 +76,12 @@
                 <% } %>
             </div>
 
-            <a href="/cart" class="header-icon header-cart-icon" title="Giỏ hàng">
-                <i class="fas fa-shopping-bag"></i>
-                <span id="header-cart-count" class="cart-badge">0</span>
-            </a>
+            <% if (!currentUser || currentUser.role !== 'admin') { %>
+                <a href="/cart" class="header-icon header-cart-icon" title="Giỏ hàng">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span id="header-cart-count" class="cart-badge">0</span>
+                </a>
+            <% } %>
 
         </div>
     </div>

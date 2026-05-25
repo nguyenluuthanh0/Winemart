@@ -95,4 +95,52 @@
         }
     </script>
 </body>
+<div id="toast-container"></div>
+    
+    <script src="/js/notifications.js"></script>
+    <script>
+        // Lắng nghe sự kiện submit của tất cả các form cập nhật trạng thái
+        document.querySelectorAll('form[action="/admin/orders/update-status"]').forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Ngăn chặn trình duyệt tự động load lại trang
+
+                // Lấy dữ liệu từ form
+                const orderId = form.querySelector('input[name="orderId"]').value;
+                const newStatus = form.querySelector('select[name="newStatus"]').value;
+
+                try {
+                    // Gọi API bằng Fetch giống hệt cách làm ở giỏ hàng
+                    const response = await fetch('/admin/orders/update-status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ orderId, newStatus })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        // Hiện thông báo màu xanh
+                        showToast(data.message, 'success');
+                        
+                        // Đợi 1.5 giây cho admin nhìn thấy thông báo rồi mới load lại trang để cập nhật màu bảng
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        // Hiện thông báo lỗi màu đỏ nếu vi phạm logic (VD: Đổi đơn đã hủy)
+                        showToast(data.message || 'Lỗi không xác định', 'error');
+                        
+                        // Khôi phục lại select box về giá trị cũ (không cần load lại trang)
+                        setTimeout(() => {
+                            window.location.reload(); // Tải lại để reset view
+                        }, 1500);
+                    }
+                } catch (error) {
+                    showToast('Lỗi kết nối tới máy chủ', 'error');
+                }
+            });
+        });
+    </script>
 </html>

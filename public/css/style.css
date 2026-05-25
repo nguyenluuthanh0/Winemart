@@ -2308,3 +2308,19 @@ body {
 .status-Processing { background-color: #cce5ff; color: #004085; } /* Xanh lam: Đang giao */
 .status-Completed { background-color: #d4edda; color: #155724; }  /* Xanh lá: Hoàn thành */
 .status-Cancelled { background-color: #f8d7da; color: #721c24; }  /* Đỏ: Đã hủy */
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 50rem !important;
+}
+.bg-warning { background-color: #ffc107 !important; }
+.bg-info { background-color: #17a2b8 !important; }
+.bg-success { background-color: #28a745 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-secondary { background-color: #6c757d !important; }
