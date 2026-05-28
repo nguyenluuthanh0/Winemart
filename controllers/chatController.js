@@ -1,6 +1,4 @@
-// Nhúng thư viện Gemini và Model Sản phẩm
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-// Lưu ý: Sửa lại đường dẫn require cho đúng với file model Product của bạn (ví dụ: productModel, Product...)
 const Product = require("../models/productModel"); 
 
 // Khởi tạo Gemini với API Key lấy từ file .env
@@ -13,11 +11,10 @@ exports.chatWithAI = async (req, res) => {
             return res.status(400).json({ reply: "Vui lòng nhập câu hỏi." });
         }
 
-        // TỐI ƯU HÓA RAG: Lấy một lượng lớn sản phẩm thay vì limit(5)
         // Chỉ select những trường cần thiết để tiết kiệm token gửi cho AI
         const products = await Product.find({ inStock: true })
             .select('name price description region grape category') // Chọn các trường chứa thông tin quan trọng
-            .limit(100); // Lấy tối đa 100 sản phẩm (rất dư dả với Gemini Flash)
+            .limit(100); // Lấy tối đa 100 sản phẩm 
 
         // Lắp ráp thông tin sản phẩm thành văn bản
         let contextData = "Cửa hàng hiện tại chưa có sản phẩm nào.";

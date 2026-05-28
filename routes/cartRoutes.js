@@ -81,6 +81,7 @@ router.get('/items', requireLogin, async (req, res) => {
                     imageUrl: cartItem.item.imageUrl,
                     price: cartItem.item.price,
                     quantity: cartItem.quantity,
+                    stock: cartItem.item.stock,
                     subtotal: subtotal,
                     itemModel: cartItem.itemModel // Trả về itemModel
                 };

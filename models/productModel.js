@@ -61,6 +61,30 @@ const productSchema = new mongoose.Schema({
         type: Number, // Dung tích, ví dụ: 750 (ml)
         required: true
     },
+    vintage: { 
+        type: Number, 
+        default: null // Năm sản xuất
+    },
+    grape: { 
+        type: String, 
+        default: ''   // Giống nho
+    },
+    abv: { 
+        type: Number, 
+        default: null // Nồng độ cồn (%)
+    },
+    region: {
+        type: String,
+        default: '' // Vùng làm vang
+    },
+    tastingNotes: {
+        type: String,
+        default: '' // Hương vị đặc trưng
+    },
+    foodPairing: {
+        type: String,
+        default: '' // Gợi ý kết hợp món ăn
+    },
 
     // ✅ Tồn kho rượu
     stock: {

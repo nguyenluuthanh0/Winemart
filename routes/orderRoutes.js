@@ -88,6 +88,38 @@ function generateOrderId() {
 // Checkout
 router.get("/checkout", requireLogin, (req, res) => res.render("checkout"));
 
+// Check stock API
+router.get("/check-stock", requireLogin, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId).populate("cart.item");
+    if (!user || user.cart.length === 0) {
+      return res.status(400).json({ message: "Giỏ hàng trống." });
+    }
+
+    const outOfStockMessages = [];
+    for (const ci of user.cart) {
+      if (!ci.item) continue;
+      const stock = typeof ci.item.stock === "number" ? ci.item.stock : 0;
+      if (stock < ci.quantity) {
+        outOfStockMessages.push(
+          `${ci.item.name} chỉ còn ${stock}, bạn đặt ${ci.quantity}`
+        );
+      }
+    }
+
+    if (outOfStockMessages.length > 0) {
+      return res.status(400).json({ 
+        message: "Một số sản phẩm không đủ tồn kho:\n" + outOfStockMessages.join("\n") 
+      });
+    }
+
+    return res.json({ message: "OK" });
+  } catch (err) {
+    console.error("Lỗi kiểm tra tồn kho:", err);
+    return res.status(500).json({ message: "Lỗi server khi kiểm tra tồn kho." });
+  }
+});
+
 // Create Payment
 router.post("/create-payment", requireLogin, async (req, res) => {
   let order;

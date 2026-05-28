@@ -35,6 +35,11 @@
                                 <img src="<%= item.imageUrl %>" alt="<%= item.name %>">
                                 <h3><%= item.name %></h3>
                                 <p class="product-origin"><%= item.category %></p> 
+                                <% if (item.grape || item.abv) { %>
+                                    <p class="product-origin" style="font-size: 0.9em; color: #666;">
+                                        <%= item.grape ? item.grape : '' %> <%= (item.grape && item.abv) ? '| ' : '' %><%= item.abv ? item.abv + '%' : '' %>
+                                    </p>
+                                <% } %>
                                 <p class="product-price"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price) %></p>
                             </a>
                             <button class="btn-add-to-cart" 

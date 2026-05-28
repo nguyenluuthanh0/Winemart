@@ -30,11 +30,19 @@
             <div class="product-detail-info">
                 <h1><%= item.name %></h1>
 
-                <% if(item.brand) { %><p class="brand">Thương hiệu: <%= item.brand %></p><% } %>
-                <% if(item.origin) { %><p class="origin">Xuất xứ: <%= item.origin %></p><% } %>
-                <% if(item.type) { %><p class="type">Loại vang: <%= item.type %></p><% } %>
-                <% if(item.category) { %><p class="type">Danh mục: <%= item.category %></p><% } %>
-                <% if(item.volume) { %><p class="volume">Dung tích: <%= item.volume %>ml</p><% } %>
+                <div class="product-attributes" style="margin-top: 1.5rem; font-size: 1.05rem; line-height: 1.8; color: #444;">
+                    <% if(item.brand) { %><p><i class="fas fa-tag" style="width: 25px; color: #c5a47e;"></i> <strong>Thương hiệu:</strong> <%= item.brand %></p><% } %>
+                    <% if(item.origin) { %><p><i class="fas fa-globe-americas" style="width: 25px; color: #c5a47e;"></i> <strong>Xuất xứ / Vùng trồng:</strong> <%= item.origin %></p><% } %>
+                    <% if(item.region) { %><p><i class="fas fa-map-marker-alt" style="width: 25px; color: #c5a47e;"></i> <strong>Vùng làm vang:</strong> <%= item.region %></p><% } %>
+                    <% if(item.type) { %><p><i class="fas fa-wine-glass" style="width: 25px; color: #c5a47e;"></i> <strong>Loại vang:</strong> <%= item.type %></p><% } %>
+                    <% if(item.category) { %><p><i class="fas fa-list" style="width: 25px; color: #c5a47e;"></i> <strong>Danh mục:</strong> <%= item.category %></p><% } %>
+                    <% if(item.vintage) { %><p><i class="fas fa-calendar-alt" style="width: 25px; color: #c5a47e;"></i> <strong>Năm sản xuất (Vintage):</strong> <%= item.vintage %></p><% } %>
+                    <% if(item.grape) { %><p><i class="fas fa-seedling" style="width: 25px; color: #c5a47e;"></i> <strong>Giống nho:</strong> <%= item.grape %></p><% } %>
+                    <% if(item.abv) { %><p><i class="fas fa-percent" style="width: 25px; color: #c5a47e;"></i> <strong>Nồng độ cồn:</strong> <%= item.abv %>%</p><% } %>
+                    <% if(item.volume) { %><p><i class="fas fa-wine-bottle" style="width: 25px; color: #c5a47e;"></i> <strong>Dung tích:</strong> <%= item.volume %>ml</p><% } %>
+                    <% if(item.tastingNotes) { %><p><i class="fas fa-leaf" style="width: 25px; color: #c5a47e;"></i> <strong>Hương vị:</strong> <%= item.tastingNotes %></p><% } %>
+                    <% if(item.foodPairing) { %><p><i class="fas fa-utensils" style="width: 25px; color: #c5a47e;"></i> <strong>Kết hợp món ăn:</strong> <%= item.foodPairing %></p><% } %>
+                </div>
 
                 <div class="price">
                     <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price) %>

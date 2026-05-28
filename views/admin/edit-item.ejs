@@ -23,8 +23,14 @@
 
             <% if (itemType === 'product') { %>
                 <div class="form-group"><label>Thương hiệu</label><input type="text" name="brand" value="<%= item.brand %>"></div>
-                <div class="form-group"><label>Xuất xứ</label><input type="text" name="origin" value="<%= item.origin %>"></div>
+                <div class="form-group"><label>Xuất xứ / Vùng trồng</label><input type="text" name="origin" value="<%= item.origin %>"></div>
                 <div class="form-group"><label>Loại vang</label><input type="text" name="type" value="<%= item.type %>"></div>
+                <div class="form-group"><label>Năm sản xuất (Vintage)</label><input type="number" name="vintage" value="<%= item.vintage %>"></div>
+                <div class="form-group"><label>Giống nho</label><input type="text" name="grape" value="<%= item.grape %>"></div>
+                <div class="form-group"><label>Nồng độ cồn (ABV %)</label><input type="number" step="0.1" name="abv" value="<%= item.abv %>"></div>
+                <div class="form-group"><label>Vùng làm vang chi tiết</label><input type="text" name="region" value="<%= item.region %>"></div>
+                <div class="form-group"><label>Hương vị đặc trưng</label><input type="text" name="tastingNotes" value="<%= item.tastingNotes %>"></div>
+                <div class="form-group"><label>Gợi ý kết hợp món ăn</label><input type="text" name="foodPairing" value="<%= item.foodPairing %>"></div>
                 <div class="form-group"><label>Dung tích (ml)</label><input type="number" name="volume" value="<%= item.volume %>"></div>
             <% } else if (itemType === 'accessory') { %>
                 <div class="form-group"><label>Danh mục phụ kiện</label>

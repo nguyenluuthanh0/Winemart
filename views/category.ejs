@@ -48,6 +48,12 @@
                             <a href="/items/detail/<%= itemType %>/<%= product._id %>" class="product-link">
                                 <img src="<%= product.imageUrl %>" alt="<%= product.name %>">
                                 <h3><%= product.name %></h3>
+                                <% if (product.origin) { %><p class="product-origin"><%= product.origin %></p><% } %>
+                                <% if (product.grape || product.abv) { %>
+                                    <p class="product-origin" style="font-size: 0.9em; color: #666;">
+                                        <%= product.grape ? product.grape : '' %> <%= (product.grape && product.abv) ? '|' : '' %> <%= product.abv ? product.abv + '%' : '' %>
+                                    </p>
+                                <% } %>
                                 <p class="product-price"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) %></p>
                             </a>
                             

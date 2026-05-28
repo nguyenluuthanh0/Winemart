@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const originFilter = document.getElementById('filter-origin');
     const brandFilter = document.getElementById('filter-brand');
     const budgetFilter = document.getElementById('filter-budget');
+    const grapeFilter = document.getElementById('filter-grape');
+    const abvFilter = document.getElementById('filter-abv');
     
     const productList = document.getElementById('product-list');
     const paginationContainer = document.getElementById('pagination-container');
@@ -80,11 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
             productCard.className = 'product-card';
             const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
             
+            let extraInfo = '';
+            if (product.grape || product.abv) {
+                let grapeText = product.grape ? product.grape : '';
+                let abvText = product.abv ? product.abv + '%' : '';
+                let separator = (product.grape && product.abv) ? ' | ' : '';
+                extraInfo = `<p class="product-origin" style="font-size: 0.9em; color: #666;">${grapeText}${separator}${abvText}</p>`;
+            }
+
             productCard.innerHTML = `
                 <a href="/items/detail/product/${product._id}" class="product-link">
                     <img src="${product.imageUrl}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p class="product-origin">${product.origin}</p>
+                    ${extraInfo}
                     <p class="product-price">${formattedPrice}</p>
                 </a>
                 <button class="btn-add-to-cart" data-product-id="${product._id}" data-item-type="Product">Thêm vào giỏ</button>
@@ -132,6 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const budgetValue = budgetFilter.value;
         if (budgetValue) params.append('budget', budgetValue);
+
+        const grapeValue = grapeFilter ? grapeFilter.value : '';
+        if (grapeValue) params.append('grape', grapeValue);
+
+        const abvValue = abvFilter ? abvFilter.value : '';
+        if (abvValue) params.append('abv', abvValue);
         
         // Luôn thêm trang
         params.append('page', page);

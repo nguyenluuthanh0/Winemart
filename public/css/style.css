@@ -376,11 +376,10 @@ body {
 
 /* Form chứa các box */
 .filter-box-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end; /* Căn các box theo đáy */
-    flex-wrap: wrap;
-    gap: 1.5rem; /* Khoảng cách giữa các box */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    align-items: end; /* Căn các box theo đáy */
 }
 
 /* Từng box lọc */
@@ -388,8 +387,6 @@ body {
     display: flex;
     flex-direction: column; /* Label ở trên, select ở dưới */
     align-items: flex-start; /* Căn trái label */
-    flex-grow: 1; /* Cho các box co giãn */
-    min-width: 180px; /* Độ rộng tối thiểu */
 }
 
 .filter-box label {

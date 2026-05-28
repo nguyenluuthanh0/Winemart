@@ -78,8 +78,12 @@ router.post('/add-item', async (req, res) => {
 
         let newItem;
         if (itemType === 'product') {
-            const { brand, origin, type, volume } = req.body;
-            newItem = new Product({ name, description, imageUrl, price: Number(price), brand, origin, type, volume, stock: Number(stock || 0) });
+            const { brand, origin, type, volume, vintage, grape, abv, region, tastingNotes, foodPairing } = req.body;
+            newItem = new Product({ 
+                name, description, imageUrl, price: Number(price), 
+                brand, origin, type, volume, stock: Number(stock || 0),
+                vintage, grape, abv, region, tastingNotes, foodPairing
+            });
         } else if (itemType === 'accessory') {
             const category = req.body.categoryAccessory;
             newItem = new Accessory({ name, description, imageUrl, price: Number(price), category });

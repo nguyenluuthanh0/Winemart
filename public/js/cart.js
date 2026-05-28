@@ -101,7 +101,7 @@ async function displayCartPage() {
                 </div>
                 <div class="cart-item-quantity-controls">
                     <button class="cart-item-quantity-btn" data-id="${item._id}" data-type="${itemModelString}" data-action="decrease">-</button>
-                    <input type="number" class="cart-item-quantity-input" value="${item.quantity}" min="0" data-id="${item._id}" data-type="${itemModelString}">
+                    <input type="number" class="cart-item-quantity-input" value="${item.quantity}" min="0" data-id="${item._id}" data-type="${itemModelString}" data-stock="${item.stock !== undefined ? item.stock : 999}" data-name="${item.name}">
                     <button class="cart-item-quantity-btn" data-id="${item._id}" data-type="${itemModelString}" data-action="increase">+</button>
                 </div>
                 <span class="cart-item-subtotal">${new Intl.NumberFormat('vi-VN').format(item.subtotal)} ₫</span>
@@ -320,6 +320,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateQuantity(itemId, itemType, newQuantity);
             }
         });
+
+        // Thêm kiểm tra khi ấn nút thanh toán
+        const proceedCheckoutBtn = document.getElementById('btn-proceed-checkout');
+        if (proceedCheckoutBtn) {
+            proceedCheckoutBtn.addEventListener('click', async (event) => {
+                event.preventDefault(); // Ngăn không cho chuyển sang trang thanh toán ngay
+                
+                try {
+                    const originalText = proceedCheckoutBtn.textContent;
+                    proceedCheckoutBtn.textContent = 'Đang kiểm tra...';
+                    proceedCheckoutBtn.style.pointerEvents = 'none';
+                    
+                    const response = await fetch('/order/check-stock');
+                    const data = await response.json();
+                    
+                    proceedCheckoutBtn.textContent = originalText;
+                    proceedCheckoutBtn.style.pointerEvents = 'auto';
+                    
+                    if (response.ok) {
+                        // Nếu OK, chuyển hướng tới trang thanh toán
+                        window.location.href = proceedCheckoutBtn.getAttribute('href');
+                    } else {
+                        // Nếu lỗi (vượt quá số lượng), hiện toast thông báo
+                        if (typeof showToast === 'function') {
+                            showToast(data.message || 'Số lượng sản phẩm vượt quá tồn kho.', 'error');
+                        } else {
+                            alert(data.message || 'Số lượng sản phẩm vượt quá tồn kho.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi kiểm tra tồn kho:', error);
+                    proceedCheckoutBtn.textContent = 'Tiến hành đặt hàng';
+                    proceedCheckoutBtn.style.pointerEvents = 'auto';
+                    if (typeof showToast === 'function') {
+                        showToast('Lỗi kết nối server khi kiểm tra tồn kho.', 'error');
+                    } else {
+                        alert('Lỗi kết nối server khi kiểm tra tồn kho.');
+                    }
+                }
+            });
+        }
     }
     
     // 3. Xử lý form đăng ký nhận tin (Newsletter)

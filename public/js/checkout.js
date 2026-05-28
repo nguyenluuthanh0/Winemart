@@ -1,6 +1,52 @@
 // public/js/checkout.js
 document.addEventListener('DOMContentLoaded', () => {
     buildOrderSummary();
+
+    const checkoutForm = document.querySelector('.checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Ngăn submit form ngay lập tức
+
+            const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Đang xử lý...";
+            }
+
+            try {
+                // Kiểm tra tồn kho trước
+                const response = await fetch('/order/check-stock');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Hiển thị toast lỗi
+                    if (typeof showToast === 'function') {
+                        showToast(data.message.replace(/\n/g, '<br>'), 'error');
+                    } else {
+                        alert(data.message);
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = "Đặt hàng";
+                    }
+                    return; // Dừng lại, không submit form
+                }
+
+                // Nếu ok, tiếp tục submit form
+                checkoutForm.submit();
+
+            } catch (error) {
+                console.error('Lỗi kiểm tra tồn kho:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Có lỗi xảy ra khi kiểm tra đơn hàng.', 'error');
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Đặt hàng";
+                }
+            }
+        });
+    }
 });
 
 // Hàm này sẽ gọi API /cart/items để lấy giỏ hàng và xây dựng giao diện

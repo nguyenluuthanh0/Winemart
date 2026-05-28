@@ -38,7 +38,7 @@ const Product = require('../models/productModel');
 router.get('/api', async (req, res) => {
     try {
         // === 1. XÂY DỰNG CÁC ĐIỀU KIỆN LỌC (3 BỘ LỌC) ===
-        const { search, type, origin, brand, budget, sort } = req.query;
+        const { search, type, origin, brand, budget, sort, grape, abv } = req.query;
         
         const productFilter = {};
         const accessoryFilter = {};
@@ -71,9 +71,20 @@ router.get('/api', async (req, res) => {
             giftsetFilter.name = brandRegex; // Tìm trong trường `name` của GiftSet
         }
 
-        // --- Bộ lọc 'Loại Vang' & 'Xuất xứ' (Chỉ cho Product) ---
+        // --- Bộ lọc 'Loại Vang' & 'Xuất xứ' & Các thuộc tính mới (Chỉ cho Product) ---
         if (type) productFilter.type = type;
         if (origin) productFilter.origin = origin;
+        if (grape) productFilter.grape = { $regex: escapeRegex(grape), $options: 'i' };
+        if (abv) {
+            // abv filter format could be e.g. "0-10", "10-14", "14-100"
+            const [minAbv, maxAbv] = abv.split('-').map(a => parseFloat(a));
+            const abvQuery = {};
+            if (!isNaN(minAbv)) abvQuery.$gte = minAbv;
+            if (!isNaN(maxAbv)) abvQuery.$lte = maxAbv;
+            if (Object.keys(abvQuery).length > 0) {
+                productFilter.abv = abvQuery;
+            }
+        }
 
         
         // === 2. THỰC HIỆN TRUY VẤN VÀ GỘP KẾT QUẢ ===
@@ -90,9 +101,9 @@ router.get('/api', async (req, res) => {
         else sortQuery.createdAt = -1; // Sắp xếp mặc định
 
         
-        // KIỂM TRA: Nếu người dùng lọc theo 'Loại Vang' hoặc 'Xuất xứ',
+        // KIỂM TRA: Nếu người dùng lọc theo các thuộc tính đặc thù của Product
         // chúng ta chỉ cần tìm trong collection 'Product'.
-        if (type || origin) {
+        if (type || origin || grape || abv) {
             
             totalProducts = await Product.countDocuments(productFilter);
             const products = await Product.find(productFilter)
