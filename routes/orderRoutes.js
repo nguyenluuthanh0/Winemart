@@ -169,11 +169,15 @@ router.post("/create-payment", requireLogin, async (req, res) => {
       // itemModel: Product / Accessory / GiftSet
       const model = ci.itemModel ?? "Product";
 
+      // BƯỚC 4: Lấy giá vốn hiện tại từ database, nếu sản phẩm chưa có giá vốn thì mặc định là 0
+      const costPrice = ci.item.costPrice || 0; 
+
       return {
         item: ci.item._id,
         itemModel: model,
         quantity: ci.quantity,
-        price,
+        price: price,             // Giá bán lúc khách đặt
+        costPrice: costPrice      // THÊM: Giá vốn lúc khách đặt
       };
     });
 

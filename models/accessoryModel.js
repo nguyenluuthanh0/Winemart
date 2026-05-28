@@ -35,7 +35,12 @@ const accessorySchema = new mongoose.Schema({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
-
+    costPrice: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
     // ✅ Tồn kho phụ kiện
     stock: {
         type: Number,

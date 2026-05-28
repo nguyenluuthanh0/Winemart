@@ -36,7 +36,7 @@
                     <th>Mã đơn</th>
                     <th>Khách hàng</th>
                     <th>Ngày đặt</th>
-                    <th>Tổng tiền</th>
+                    <th>Doanh thu / Lợi nhuận</th>
                     <th>Hình thức</th>
                     <th>Trạng thái / Cập nhật</th>
                     <th>Chi tiết</th>
@@ -52,7 +52,20 @@
                                 <small style="color: #666;"><%= order.customerInfo ? order.customerInfo.phone : '' %></small>
                             </td>
                             <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
-                            <td style="color: #800020; font-weight: bold;"><%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫</td>
+                            <td>
+                                <% 
+                                    let orderProfit = 0;
+                                    if (order.items && order.items.length > 0) {
+                                        orderProfit = order.items.reduce((sum, item) => sum + ((item.price - (item.costPrice || 0)) * item.quantity), 0);
+                                    }
+                                %>
+                                <div style="color: #800020; font-weight: bold; font-size: 15px;" title="Doanh thu">
+                                    <%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫
+                                </div>
+                                <div style="color: #28a745; font-size: 13px; margin-top: 4px; font-weight: bold;" title="Lợi nhuận">
+                                    + <%= new Intl.NumberFormat('vi-VN').format(orderProfit) %> ₫ (Lãi)
+                                </div>
+                            </td>
                             <td style="text-transform: uppercase;"><%= order.paymentMethod %></td>
                             
                             <td>

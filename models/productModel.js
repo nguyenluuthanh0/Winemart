@@ -52,6 +52,12 @@ const productSchema = new mongoose.Schema({
         type: String, // Đường dẫn tới hình ảnh sản phẩm
         required: true
     },
+    costPrice: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
     price: {
         type: Number,
         required: true,

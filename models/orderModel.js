@@ -21,7 +21,8 @@ const orderSchema = new mongoose.Schema({
             item: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'items.itemModel' },
             itemModel: { type: String, required: true, enum: ['Product', 'Accessory', 'GiftSet'] },
             quantity: { type: Number, required: true },
-            price: { type: Number, required: true } // Giá tại thời điểm đặt hàng
+            price: { type: Number, required: true },
+            costPrice: { type: Number, required: true, default: 0 } // Giá tại thời điểm đặt hàng
         }
     ],
 

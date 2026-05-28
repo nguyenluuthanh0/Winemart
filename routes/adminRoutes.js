@@ -264,6 +264,75 @@ router.post('/orders/update-status', async (req, res) => {
         res.status(500).json({ success: false, message: "Lỗi Server" });
     }
 });
+// GET: Giao diện nhập kho 
+router.get('/import', async (req, res) => {
+    try {
+        // Lấy danh sách từ CẢ 3 BẢNG cùng một lúc bằng Promise.all để tối ưu tốc độ
+        const productsPromise = Product.find().select('name stock costPrice price');
+        const accessoriesPromise = Accessory.find().select('name stock costPrice price');
+        const giftSetsPromise = GiftSet.find().select('name stock costPrice price');
+
+        const [products, accessories, giftSets] = await Promise.all([
+            productsPromise,
+            accessoriesPromise,
+            giftSetsPromise
+        ]);
+
+        // Gộp tất cả kết quả lại thành 1 mảng chung để gửi ra giao diện
+        const allItems = [...products, ...accessories, ...giftSets];
+
+        res.render('admin/import-stock', { items: allItems });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Lỗi Server");
+    }
+});
+
+// POST: Xử lý nhập kho
+router.post('/import', async (req, res) => {
+    try {
+        const { itemId, importQuantity, totalImportCost } = req.body;
+        const quantity = Number(importQuantity);
+        const totalCost = Number(totalImportCost); // Tổng tiền nhập lô hàng này
+
+        if (quantity <= 0 || totalCost < 0) {
+            return res.status(400).send("Dữ liệu nhập không hợp lệ");
+        }
+
+        // TÌM KIẾM ITEM TRONG CẢ 3 BẢNG (Tuần tự tìm đến khi thấy)
+        let item = await Product.findById(itemId);
+        if (!item) item = await Accessory.findById(itemId);
+        if (!item) item = await GiftSet.findById(itemId);
+
+        if (!item) return res.status(404).send("Không tìm thấy sản phẩm");
+
+        // THUẬT TOÁN TÍNH GIÁ VỐN BÌNH QUÂN GIA QUYỀN
+        // Đảm bảo không bị lỗi NaN nếu dữ liệu cũ chưa có stock hoặc costPrice
+        const currentStock = item.stock || 0;
+        const currentCostPrice = item.costPrice || 0;
+
+        const oldTotalValue = currentStock * currentCostPrice;
+        const newStock = currentStock + quantity;
+        const newCostPrice = Math.round((oldTotalValue + totalCost) / newStock);
+
+        // Cập nhật vào DB
+        item.stock = newStock;
+        item.costPrice = newCostPrice;
+        
+        // Cập nhật trạng thái inStock nếu model của bạn có trường này
+        if (item.stock > 0) {
+            item.inStock = true;
+        }
+
+        await item.save();
+
+        // Quay về trang dashboard sau khi nhập kho xong
+        res.redirect('/admin/dashboard'); 
+    } catch (error) {
+        console.error("Lỗi nhập kho:", error);
+        res.status(500).send("Lỗi Server");
+    }
+});
 // --- THỐNG KÊ (STATISTICS) ---
 router.get('/statistics', async (req, res) => {
     try {
@@ -296,8 +365,8 @@ router.get('/statistics', async (req, res) => {
         if (startDate && endDate) {
             activePeriod = 'custom';
             matchConditions.createdAt = {
-                $gte: new Date(startDate + "T00:00:00.000Z"),
-                $lte: new Date(endDate + "T23:59:59.999Z")
+                $gte: new Date(startDate + "T00:00:00.000+07:00"),
+                $lte: new Date(endDate + "T23:59:59.999+07:00")
             };
         } else if (finalSelectedVal) {
             if (period === 'year') {
@@ -313,27 +382,24 @@ router.get('/statistics', async (req, res) => {
             matchConditions.$expr = { $eq: [{ $year: "$createdAt" }, currentYear] };
         }
 
-        // --- CẬP NHẬT 1: THUẬT TOÁN TÍNH TỔNG LỢI NHUẬN THỰC TẾ ---
+        // --- CẬP NHẬT 1: TÍNH LỢI NHUẬN DỰA TRÊN GIÁ VỐN THỰC TẾ ---
         const calculateProfitBlock = {
             $sum: {
                 $reduce: {
-                    input: { $ifNull: ["$items", []] }, // Đề phòng đơn hàng cũ không có mảng items
+                    input: { $ifNull: ["$items", []] },
                     initialValue: 0,
                     in: {
                         $add: [
                             "$$value",
                             {
                                 $multiply: [
-                                    { $ifNull: ["$$this.price", 0] },    // Nếu thiếu giá, mặc định là 0
-                                    { $ifNull: ["$$this.quantity", 0] }, // Nếu thiếu số lượng, mặc định là 0
                                     {
-                                        $cond: [
-                                            // Nếu itemModel là Product thì nhân 0.5, ngược lại (Accessory, GiftSet) nhân 0.2
-                                            { $eq: ["$$this.itemModel", "Product"] },
-                                            0.50, 
-                                            0.20  
+                                        $subtract: [
+                                            { $ifNull: ["$$this.price", 0] }, // Giá bán
+                                            { $ifNull: ["$$this.costPrice", 0] } // Giá vốn (Nếu đơn cũ ko có sẽ mặc định là 0)
                                         ]
-                                    }
+                                    },
+                                    { $ifNull: ["$$this.quantity", 0] } // Nhân với số lượng
                                 ]
                             }
                         ]

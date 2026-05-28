@@ -89,6 +89,7 @@
                     <th>Đơn giá</th>
                     <th>Số lượng</th>
                     <th>Thành tiền</th>
+                    <th>Tiền lãi</th>
                 </tr>
             </thead>
             <tbody>
@@ -117,11 +118,18 @@
                             <td style="font-weight: bold; color: #800020;">
                                 <%= new Intl.NumberFormat('vi-VN').format(subItem.price * subItem.quantity) %> ₫
                             </td>
+                            <td style="font-weight: bold; color: #28a745;">
+                                <% let itemProfit = (subItem.price - (subItem.costPrice || 0)) * subItem.quantity; %>
+                                + <%= new Intl.NumberFormat('vi-VN').format(itemProfit) %> ₫
+                                <div style="font-size: 12px; color: #888; font-weight: normal; margin-top: 4px;">
+                                    (Vốn: <%= new Intl.NumberFormat('vi-VN').format(subItem.costPrice || 0) %> ₫)
+                                </div>
+                            </td>
                         </tr>
                     <% }) %>
                 <% } else { %>
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 15px;">Không tìm thấy thông tin sản phẩm trong đơn.</td>
+                        <td colspan="7" style="text-align: center; padding: 15px;">Không tìm thấy thông tin sản phẩm trong đơn.</td>
                     </tr>
                 <% } %>
             </tbody>
@@ -130,6 +138,15 @@
         <div style="text-align: right; margin-top: 20px; background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid #eee;">
             <p style="font-size: 16px; margin: 5px 0;">Tổng số lượng sản phẩm: <strong><%= order.items.reduce((total, item) => total + item.quantity, 0) %></strong></p>
             <h2 style="color: #800020; font-size: 24px; margin: 5px 0;">Tổng giá trị đơn hàng: <%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫</h2>
+            <% 
+                let totalOrderProfit = 0;
+                if (order.items && order.items.length > 0) {
+                    totalOrderProfit = order.items.reduce((sum, item) => sum + ((item.price - (item.costPrice || 0)) * item.quantity), 0);
+                }
+            %>
+            <h2 style="color: #28a745; font-size: 20px; margin: 10px 0 5px 0; border-top: 1px dashed #ccc; padding-top: 10px;">
+                Tổng lợi nhuận thu về: <%= new Intl.NumberFormat('vi-VN').format(totalOrderProfit) %> ₫
+            </h2>
         </div>
     </div>
 

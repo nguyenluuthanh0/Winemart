@@ -424,6 +424,8 @@ body {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    grid-column: 1 / -1;  
+    justify-self: center;
 }
 
 .filter-submit-btn:hover {
