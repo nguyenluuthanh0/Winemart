@@ -6,6 +6,7 @@ const { isAdmin } = require('../middleware/authMiddleware');
 const Accessory = require('../models/accessoryModel'); 
 const GiftSet = require('../models/giftSetModel');   
 const Order = require('../models/orderModel');
+const upload = require('../middleware/uploadMiddleware');
 
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
 router.use(isAdmin);
@@ -72,9 +73,13 @@ router.get('/add-product', (req, res) => {
 });
 
 // POST /admin/add-item -> Xử lý việc thêm mọi loại sản phẩm
-router.post('/add-item', async (req, res) => {
+router.post('/add-item', upload.single('imageFile'), async (req, res) => {
     try {
-        const { itemType, name, description, imageUrl, price, stock } = req.body;
+        const { itemType, name, description, price, stock } = req.body;
+        let imageUrl = req.body.imageUrl;
+        if (req.file) {
+            imageUrl = '/images/uploads/' + req.file.filename;
+        }
 
         let newItem;
         if (itemType === 'product') {
@@ -145,7 +150,7 @@ router.get('/edit-item/:type/:id', async (req, res) => {
 });
 
 // POST /admin/edit-item/:type/:id -> Xử lý việc cập nhật item
-router.post('/edit-item/:type/:id', async (req, res) => {
+router.post('/edit-item/:type/:id', upload.single('image'), async (req, res) => {
     try {
         const { type, id } = req.params;
         const Model = getModelByType(type);
@@ -158,6 +163,10 @@ router.post('/edit-item/:type/:id', async (req, res) => {
                 // Cập nhật các trường dữ liệu từ form (req.body) vào item
                 Object.assign(item, req.body);
                 
+                if (req.file) {
+                    item.imageUrl = '/images/uploads/' + req.file.filename;
+                }
+
                 // Đảm bảo trường stock là dạng số
                 if (req.body.stock) {
                     item.stock = Number(req.body.stock);

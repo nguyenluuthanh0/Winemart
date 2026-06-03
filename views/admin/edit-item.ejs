@@ -10,11 +10,18 @@
     <%- include('../partials/header') %>
     <div class="container">
         
-        <form class="admin-form" action="/admin/edit-item/<%= itemType %>/<%= item._id %>" method="POST">
+        <form class="admin-form" action="/admin/edit-item/<%= itemType %>/<%= item._id %>" method="POST" enctype="multipart/form-data">
             
             <div class="form-group"><label>Tên</label><input type="text" name="name" value="<%= item.name %>" required></div>
             <div class="form-group"><label>Mô tả</label><textarea name="description" required><%= item.description %></textarea></div>
-            <div class="form-group"><label>Link ảnh</label><input type="text" name="imageUrl" value="<%= item.imageUrl %>" required></div>
+                        <div class="form-group">
+                <label>Ảnh sản phẩm hiện tại</label>
+                <div>
+                    <img src="<%= item.imageUrl %>" alt="Current Image" style="max-width: 200px; display: block; margin-bottom: 10px;">
+                </div>
+                <label>Thay đổi ảnh (Tùy chọn)</label>
+                <input type="file" name="image" accept="image/*" style="border: 1px solid #ddd; padding: 8px; width: 100%;">
+            </div>
             <div class="form-group"><label>Giá</label><input type="number" name="price" value="<%= item.price %>" required></div>
             <div class="form-group">
                 <label>Số lượng kho</label>

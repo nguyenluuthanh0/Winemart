@@ -415,11 +415,7 @@ router.get("/detail/:orderId", requireLogin, async (req, res) => {
     }).populate("items.item");
     if (!order) return res.redirect("/my-orders");
 
-    // Vá mềm VNPay
-    if (order.paymentMethod === "vnpay" && order.paid && order.status !== "completed") {
-      order.status = "completed";
-      await order.save();
-    }
+    /* removed vnpay hotfix */
 
     return res.render("order-status", { order });
   } catch (e) {

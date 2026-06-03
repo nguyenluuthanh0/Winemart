@@ -16,7 +16,14 @@
             <div class="form-group"><label>Xuất xứ</label><input type="text" name="origin" value="<%= product.origin %>" required></div>
             <div class="form-group"><label>Loại vang</label><input type="text" name="type" value="<%= product.type %>" required></div>
             <div class="form-group"><label>Mô tả</label><textarea name="description" required><%= product.description %></textarea></div>
-            <div class="form-group"><label>Link ảnh</label><input type="text" name="imageUrl" value="<%= product.imageUrl %>" required></div>
+                        <div class="form-group">
+                <label>Ảnh sản phẩm hiện tại</label>
+                <div>
+                    <img src="<%= product.imageUrl %>" alt="Current Image" style="max-width: 200px; display: block; margin-bottom: 10px;">
+                </div>
+                <label>Thay đổi ảnh (Tùy chọn)</label>
+                <input type="file" name="image" accept="image/*" style="border: 1px solid #ddd; padding: 8px; width: 100%;">
+            </div>
             <div class="form-group"><label>Giá</label><input type="number" name="price" value="<%= product.price %>" required></div>
             <div class="form-group"><label>Dung tích (ml)</label><input type="number" name="volume" value="<%= product.volume %>" required></div>
             <button type="submit">Cập nhật</button>
