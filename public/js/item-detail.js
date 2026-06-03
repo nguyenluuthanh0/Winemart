@@ -37,9 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- Logic 1: Mở/Đóng Modal (Giữ nguyên) ---
+    // --- Logic 1: Mở/Đóng Modal (Đã cập nhật kiểm tra đăng nhập) ---
     if (openModalBtn && reviewModal) {
         openModalBtn.addEventListener('click', () => {
+            if (openModalBtn.getAttribute('data-logged-in') === 'false') {
+                if (typeof showToast === 'function') {
+                    showToast('Cần đăng nhập để đánh giá sản phẩm', 'info');
+                } else {
+                    alert('Cần đăng nhập để đánh giá sản phẩm');
+                }
+                return;
+            }
             reviewModal.classList.add('visible');
         });
     }
@@ -108,6 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     if (userPromptRatingStars && reviewModal) {
         userPromptRatingStars.addEventListener('click', (e) => {
+            if (userPromptRatingStars.getAttribute('data-logged-in') === 'false') {
+                if (typeof showToast === 'function') {
+                    showToast('Cần đăng nhập để đánh giá sản phẩm', 'info');
+                } else {
+                    alert('Cần đăng nhập để đánh giá sản phẩm');
+                }
+                return;
+            }
+
             if (e.target.tagName === 'I') {
                 const clickedValue = e.target.dataset.value;
                 

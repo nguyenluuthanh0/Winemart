@@ -84,7 +84,7 @@
                 <div class="review-count">(<%= item.reviews ? item.reviews.length : 0 %> lượt đánh giá)</div>
                 
                 <div class="user-prompt-rating">Bạn cảm thấy sản phẩm này như thế nào?</div>
-                <div class="user-rating-stars-display" id="user-prompt-rating-stars">
+                <div class="user-rating-stars-display" id="user-prompt-rating-stars" data-logged-in="<%= typeof currentUser !== 'undefined' && currentUser ? 'true' : 'false' %>">
                     <i class="far fa-star" data-value="1"></i>
                     <i class="far fa-star" data-value="2"></i>
                     <i class="far fa-star" data-value="3"></i>
@@ -130,7 +130,7 @@
 
             <div class="summary-right">
                 <p>Vui lòng chia sẻ nhận xét về sản phẩm của Winemart</p>
-                <button class="btn-write-review" id="btn-open-review-modal">Viết đánh giá</button>
+                <button class="btn-write-review" id="btn-open-review-modal" data-logged-in="<%= typeof currentUser !== 'undefined' && currentUser ? 'true' : 'false' %>">Viết đánh giá</button>
             </div>
         </div>
 

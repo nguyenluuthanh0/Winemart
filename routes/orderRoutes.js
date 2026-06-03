@@ -25,7 +25,8 @@ const STOCK_MODELS = {
 function ensureHttpsUrl(url, configName) {
   const trimmed = (url || "").trim();
   if (!trimmed) throw new Error(`Thiếu cấu hình ${configName}`);
-  if (!/^https:\/\//i.test(trimmed))
+  const isLocal = trimmed.includes('localhost') || trimmed.includes('127.0.0.1');
+  if (!isLocal && !/^https:\/\//i.test(trimmed))
     throw new Error(
       `${configName} phải bắt đầu bằng https:// theo yêu cầu của VNPay.`
     );
@@ -46,11 +47,13 @@ function resolveCallbackUrl(req, envKey, fallbackPath) {
   const host = req.get("host");
   if (!host)
     throw new Error("Không xác định được host để tạo callback URL cho VNPay.");
-  if (protocol !== "https")
+  
+  const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+  if (!isLocal && protocol !== "https")
     throw new Error(
       `Cần HTTPS cho ${fallbackPath}. Thiết lập ${envKey} hoặc PUBLIC_BASE_URL.`
     );
-  return `https://${host}${fallbackPath}`;
+  return `${isLocal ? 'http' : protocol}://${host}${fallbackPath}`;
 }
 
 function sortObject(obj) {
