@@ -1,5 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Product = require("../models/productModel"); 
+const Accessory = require("../models/accessoryModel"); 
+const GiftSet = require("../models/giftSetModel");
 
 // Khởi tạo Gemini với API Key lấy từ file .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -11,23 +13,53 @@ exports.chatWithAI = async (req, res) => {
             return res.status(400).json({ reply: "Vui lòng nhập câu hỏi." });
         }
 
-        // Chỉ select những trường cần thiết để tiết kiệm token gửi cho AI
-        const products = await Product.find({ inStock: true })
-            .select('name price description region grape type stock') // Chọn các trường chứa thông tin quan trọng
-            .limit(100); // Lấy tối đa 100 sản phẩm 
+        // Tải các sản phẩm từ cả 3 bảng
+        const productsPromise = Product.find({ inStock: true })
+            .select('name price description region grape type stock')
+            .limit(50);
+            
+        const accessoriesPromise = Accessory.find({ inStock: true })
+            .select('name price description category stock')
+            .limit(30);
+
+        const giftSetsPromise = GiftSet.find({ inStock: true })
+            .select('name price description category stock')
+            .limit(30);
+
+        const [products, accessories, giftSets] = await Promise.all([
+            productsPromise,
+            accessoriesPromise,
+            giftSetsPromise
+        ]);
 
         // Lắp ráp thông tin sản phẩm thành văn bản
         let contextData = "Cửa hàng hiện tại chưa có sản phẩm nào.";
-        if (products.length > 0) {
-            contextData = products.map(p => 
-                `- Tên: ${p.name} | Giá: ${p.price} VNĐ | Số lượng tồn: ${p.stock || 0} chai | Vùng/Quốc gia: ${p.region || 'Không rõ'} | Phân loại: ${p.type || 'Không rõ'} | Đặc điểm: ${p.description ? p.description.substring(0, 100) + '...' : 'Không có'}`
-            ).join('\n');
+        
+        let productText = products.map(p => 
+            `- [Rượu vang] Tên: ${p.name} | Giá: ${p.price} VNĐ | SL: ${p.stock || 0} | Vùng: ${p.region || 'Không rõ'} | Phân loại: ${p.type || 'Không rõ'} | Nho: ${p.grape || 'Không rõ'} | Đặc điểm: ${p.description ? p.description.substring(0, 100) + '...' : 'Không có'}`
+        ).join('\n');
+
+        let accessoryText = accessories.map(a => 
+            `- [Phụ kiện] Tên: ${a.name} | Giá: ${a.price} VNĐ | SL: ${a.stock || 0} | Danh mục: ${a.category || 'Không rõ'} | Đặc điểm: ${a.description ? a.description.substring(0, 100) + '...' : 'Không có'}`
+        ).join('\n');
+
+        let giftSetText = giftSets.map(g => 
+            `- [Quà tặng] Tên: ${g.name} | Giá: ${g.price} VNĐ | SL: ${g.stock || 0} | Danh mục: ${g.category || 'Không rõ'} | Đặc điểm: ${g.description ? g.description.substring(0, 100) + '...' : 'Không có'}`
+        ).join('\n');
+
+        let allContextArray = [];
+        if (productText) allContextArray.push("--- RƯỢU VANG ---\n" + productText);
+        if (accessoryText) allContextArray.push("--- PHỤ KIỆN ---\n" + accessoryText);
+        if (giftSetText) allContextArray.push("--- QUÀ TẶNG ---\n" + giftSetText);
+
+        if (allContextArray.length > 0) {
+            contextData = allContextArray.join('\n\n');
         }
 
         // Tạo Prompt
         const prompt = `
         Bạn là một chuyên gia thử nếm rượu vang (Sommelier) và nhân viên chăm sóc khách hàng làm việc tại cửa hàng Winemart.
-        Nhiệm vụ của bạn là tư vấn rượu vang và giải đáp các thắc mắc về dịch vụ của cửa hàng cho khách hàng.
+        Nhiệm vụ của bạn là tư vấn rượu vang, phụ kiện rượu vang, các set quà tặng và giải đáp các thắc mắc về dịch vụ của cửa hàng cho khách hàng.
         Giọng văn: Lịch sự, chuyên nghiệp, ngắn gọn.
 
         THÔNG TIN CHUNG VỀ CỬA HÀNG (Sử dụng thông tin này để trả lời các câu hỏi về dịch vụ):
@@ -41,9 +73,9 @@ exports.chatWithAI = async (req, res) => {
         
         QUY TẮC BẮT BUỘC (Guardrails):
         1. BẠN PHẢI ĐỌC KỸ "Danh sách sản phẩm hiện có" và "Thông tin chung về cửa hàng" bên dưới. 
-        2. Tự động so sánh giá tiền, xuất xứ (Pháp, Ý, Chile...) để tìm ra sản phẩm khớp với câu hỏi.
+        2. Tự động phân tích nhu cầu của khách (ví dụ: tìm rượu, tìm ly, tìm hộp quà) để tìm ra sản phẩm khớp với câu hỏi.
         3. CHỈ TƯ VẤN các sản phẩm CÓ TRONG DANH SÁCH NÀY. Tuyệt đối không bịa đặt sản phẩm không có.
-        4. Nếu không có sản phẩm nào thỏa mãn, hãy nói rõ là không có và gợi ý các sản phẩm khác có mức giá gần nhất.
+        4. Nếu không có sản phẩm nào thỏa mãn, hãy nói rõ là không có và gợi ý các sản phẩm khác phù hợp hoặc có mức giá gần nhất.
         5. Sử dụng thẻ HTML cơ bản (<b>, <i>, <br>) để in đậm tên sản phẩm và định dạng câu trả lời cho đẹp mắt.
 
         Danh sách sản phẩm hiện có tại Winemart (Ngữ cảnh):
