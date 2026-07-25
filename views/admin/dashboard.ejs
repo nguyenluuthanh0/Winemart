@@ -63,11 +63,13 @@
                                     <span class="status-badge status-Completed">Bình thường</span>
                                 <% } %>
                             </td>
-                            <td class="actions">
-                                <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
-                                <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
-                                    <button type="submit" class="btn-delete">Xóa</button>
-                                </form>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
+                                    <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                        <button type="submit" class="btn-delete">Xóa</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <% }) %>

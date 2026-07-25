@@ -143,21 +143,7 @@ body {
     align-items: center;
 }
 
-.swiper-slide.slide-1 {
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(../images/anh-nen-1.png);
-}
 
-.swiper-slide.slide-2 {
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(../images/anh-nen-2.png);
-}
-
-.swiper-slide.slide-3 {
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(../images/anh-nen-3.png);
-}
-
-.swiper-slide.slide-4 {
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(../images/anh-nen-4.png);
-}
 
 .slide-content {
     max-width: 800px;
@@ -925,21 +911,22 @@ body {
     padding: 12px;
     border: 1px solid #000000;
     text-align: left;
+    vertical-align: middle; /* Căn giữa theo chiều dọc */
 }
 
 .admin-table th {
     background-color: #c1865f;
 }
 
-.actions {
+.action-buttons {
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.actions form {
+.action-buttons form {
     margin: 0;
-    display: flex;
+    padding: 0; /* Xóa khoảng đệm mặc định của form */
 }
 
 .btn-edit,

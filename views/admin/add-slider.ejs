@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Slider Mới</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+<div class="admin-form">
+    <h1>Thêm Slider Mới</h1>
+    <form action="/admin/sliders/add" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title">Tiêu đề chính</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="subtitle">Tiêu đề phụ</label>
+            <input type="text" id="subtitle" name="subtitle">
+        </div>
+        <div class="form-group">
+            <label for="link">Link (Khi click vào slider)</label>
+            <input type="text" id="link" name="link" placeholder="/products/category/vang-do">
+        </div>
+        <div class="form-group">
+            <label for="position">Vị trí (Số nhỏ hơn sẽ hiển thị trước)</label>
+            <input type="number" id="position" name="position" value="1" required>
+        </div>
+        <div class="form-group">
+            <label for="imageFile">Ảnh Slider</label>
+            <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+            <small>Nên dùng ảnh có tỷ lệ 16:9 (ví dụ: 1920x1080px)</small>
+        </div>
+        
+        <button type="submit">Thêm Slider</button>
+    </form>
+</div>
+
+<script src="/js/header.js"></script>
+</body>
+</html>

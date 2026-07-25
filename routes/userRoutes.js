@@ -7,6 +7,7 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const Accessory = require('../models/accessoryModel');
 const GiftSet = require('../models/giftSetModel');
+const Slider = require('../models/sliderModel');
 const jwt = require('jsonwebtoken'); 
 const { sendOTPEmail } = require('../utils/mailService');
 const crypto = require('crypto');
@@ -19,8 +20,14 @@ function escapeRegex(text) {
 }
 
 // HIỂN THỊ TRANG CHỦ
-router.get('/', (req, res) => {
-    res.render('index');
+router.get('/', async (req, res) => {
+    try {
+        const sliders = await Slider.find().sort({ position: 'asc' });
+        res.render('index', { sliders });
+    } catch (error) {
+        console.error('Error fetching sliders for homepage:', error);
+        res.render('index', { sliders: [] });
+    }
 });
 
 // HIỂN THỊ TRANG GIỎ HÀNG

@@ -4,8 +4,9 @@ const router = express.Router();
 const Product = require('../models/productModel');
 const { isAdmin } = require('../middleware/authMiddleware');
 const Accessory = require('../models/accessoryModel'); 
-const GiftSet = require('../models/giftSetModel');   
+const GiftSet = require('../models/giftSetModel');
 const Order = require('../models/orderModel');
+const Slider = require('../models/sliderModel');
 const upload = require('../middleware/uploadMiddleware');
 
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
@@ -500,7 +501,87 @@ router.get('/order-detail/:id', async (req, res) => {
         res.render('admin/order-detail', { order });
     } catch (error) {
         console.error("Lỗi khi tải chi tiết đơn hàng:", error);
-        res.status(500).send("Lỗi hệ thống");
+        res.status(500).send("Lỗi khi tải chi tiết đơn hàng");
+    }
+});
+
+// ==================================
+// ROUTES QUẢN LÝ SLIDER
+// ==================================
+
+// GET: Hiển thị trang quản lý tất cả slider
+router.get('/sliders', async (req, res) => {
+    try {
+        const sliders = await Slider.find().sort({ position: 'asc' });
+        res.render('admin/manage-sliders', { sliders });
+    } catch (error) {
+        console.error("Lỗi khi tải trang quản lý slider:", error);
+        res.status(500).send("Lỗi Server");
+    }
+});
+
+// GET: Hiển thị form thêm slider mới
+router.get('/sliders/add', (req, res) => {
+    res.render('admin/add-slider');
+});
+
+// POST: Xử lý thêm slider mới
+router.post('/sliders/add', upload.single('imageFile'), async (req, res) => {
+    try {
+        const { title, subtitle, link, position } = req.body;
+        let imageUrl = '/images/default-slider.png'; // Ảnh mặc định
+        if (req.file) {
+            imageUrl = '/images/uploads/' + req.file.filename;
+        }
+        // Sửa lại để khớp với model: title -> title, subtitle -> text, link -> buttonLink
+        const newSlider = new Slider({ title, text: subtitle, buttonLink: link, buttonText: "Khám Phá Ngay", position, imageUrl });
+        await newSlider.save();
+        res.redirect('/admin/sliders');
+    } catch (error) {
+        console.error("Lỗi khi thêm slider:", error);
+        res.status(500).send("Lỗi Server");
+    }
+});
+
+// GET: Hiển thị form chỉnh sửa slider
+router.get('/sliders/edit/:id', async (req, res) => {
+    try {
+        const slider = await Slider.findById(req.params.id);
+        if (!slider) return res.status(404).send('Không tìm thấy slider.');
+        res.render('admin/edit-slider', { slider });
+    } catch (error) {
+        console.error("Lỗi khi tải form sửa slider:", error);
+        res.status(500).send("Lỗi Server");
+    }
+});
+
+// POST: Xử lý chỉnh sửa slider
+router.post('/sliders/edit/:id', upload.single('imageFile'), async (req, res) => {
+    try {
+        const { title, subtitle, link, position } = req.body;
+        // Sửa lại để khớp với model
+        const updateData = { title, text: subtitle, buttonLink: link, position };
+
+        if (req.file) {
+            updateData.imageUrl = '/images/uploads/' + req.file.filename;
+        }
+
+        await Slider.findByIdAndUpdate(req.params.id, updateData);
+        res.redirect('/admin/sliders');
+    } catch (error) {
+        console.error("Lỗi khi cập nhật slider:", error);
+        res.status(500).send("Lỗi Server");
+    }
+});
+
+// POST: Xóa slider
+router.post('/sliders/delete/:id', async (req, res) => {
+    try {
+        await Slider.findByIdAndDelete(req.params.id);
+        res.redirect('/admin/sliders');
+    } catch (error) {
+        console.error("Lỗi khi xóa slider:", error);
+        res.status(500).send("Lỗi Server");
     }
 });
 

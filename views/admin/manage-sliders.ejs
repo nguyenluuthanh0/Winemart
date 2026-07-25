@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Slider</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+<div class="container admin-form">
+    <div class="admin-header">
+        <h1>Quản lý Slider</h1>
+        <a href="/admin/sliders/add" class="btn-add-new">Thêm Slider Mới</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Vị trí</th>
+                <th>Ảnh</th>
+                <th>Tiêu đề</th>
+                <th>Tiêu đề phụ</th>
+                <th>Link</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% sliders.forEach(slider => { %>
+                <tr>
+                    <td><%= slider.position %></td>
+                    <td><img src="<%= slider.imageUrl %>" alt="Slider Image" width="150"></td>
+                    <td><%= slider.title %></td>
+                    <td><%= slider.text %></td>
+                    <td><%= slider.buttonLink %></td>
+                    <td class="actions">
+                        <a href="/admin/sliders/edit/<%= slider._id %>" class="btn-edit">Sửa</a>
+                        <form action="/admin/sliders/delete/<%= slider._id %>" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa slider này?');">
+                            <button type="submit" class="btn-delete">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<script src="/js/header.js"></script>
+</body>
+</html>

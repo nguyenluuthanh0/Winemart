@@ -1,12 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // === KHỞI TẠO SWIPER SLIDER (Giữ nguyên) ===
-    const heroSwiper = new Swiper('.heroSwiper', {
-        loop: true,
-        autoplay: { delay: 5000, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-    });
+    // === KHỞI TẠO SWIPER SLIDER (ĐÃ SỬA LỖI) ===
+    // Vấn đề slider không chạy thường xảy ra khi chỉ có 1 slide trong database.
+    // Đoạn code này sẽ kiểm tra số lượng slide, và chỉ bật chế độ tự chạy (autoplay) và lặp lại (loop) nếu có nhiều hơn 1 slide.
+    const heroSwiperContainer = document.querySelector('.heroSwiper');
+    if (heroSwiperContainer) {
+        const slides = heroSwiperContainer.querySelectorAll('.swiper-slide');
+        const hasMultipleSlides = slides.length > 1;
+
+        const heroSwiper = new Swiper(heroSwiperContainer, {
+            // Chỉ bật loop và autoplay nếu có nhiều hơn 1 slide
+            loop: hasMultipleSlides,
+            autoplay: hasMultipleSlides ? {
+                delay: 5000, // 5 giây
+                disableOnInteraction: false,
+            } : false,
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        });
+    }
 
     // === XỬ LÝ CLICK NÚT TRONG SLIDER (Giữ nguyên) ===
     document.querySelectorAll('.scroll-link').forEach(anchor => {
