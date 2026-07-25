@@ -103,13 +103,18 @@ router.get('/items', requireLogin, async (req, res) => {
 // API THÊM VÀO GIỎ HÀNG (ĐÃ SỬA)
 // ==========================================
 router.post('/add', requireLogin, async (req, res) => {
-    const { itemId, itemType, quantity = 1 } = req.body; // Nhận cả itemType từ frontend
+    let { itemId, itemType, quantity = 1 } = req.body; 
     const userId = req.session.userId;
 
     if (!itemId || !itemType) {
         return res.status(400).json({ message: 'Thiếu ID sản phẩm hoặc loại sản phẩm.' });
     }
-    if (!['Product', 'Accessory', 'GiftSet'].includes(itemType)) {
+
+    // Chuẩn hóa itemType để khớp với Enum trong Model
+    const validModels = { 'product': 'Product', 'accessory': 'Accessory', 'giftset': 'GiftSet' };
+    itemType = validModels[itemType.toLowerCase()];
+
+    if (!itemType) {
          return res.status(400).json({ message: 'Loại sản phẩm không hợp lệ.' });
     }
 

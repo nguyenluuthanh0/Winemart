@@ -169,8 +169,12 @@ router.post("/create-payment", requireLogin, async (req, res) => {
       const price = ci.item.price;
       amount += price * ci.quantity;
 
-      // itemModel: Product / Accessory / GiftSet
-      const model = ci.itemModel ?? "Product";
+      // Chuẩn hóa casing để tránh lỗi validation enum
+      let model = ci.itemModel ?? "Product";
+      const modelMap = { 'product': 'Product', 'accessory': 'Accessory', 'giftset': 'GiftSet' };
+      if (modelMap[model.toLowerCase()]) {
+          model = modelMap[model.toLowerCase()];
+      }
 
       // BƯỚC 4: Lấy giá vốn hiện tại từ database, nếu sản phẩm chưa có giá vốn thì mặc định là 0
       const costPrice = ci.item.costPrice || 0; 

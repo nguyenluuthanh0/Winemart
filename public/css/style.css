@@ -934,21 +934,29 @@ body {
 .actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .actions form {
     margin: 0;
+    display: flex;
 }
 
 .btn-edit,
 .btn-delete,
 .btn-add-new {
-    padding: 8px 12px;
+    padding: 0;
+    height: 36px;
+    width: 85px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     border-radius: 5px;
     color: rgb(255, 255, 255);
     text-decoration: none;
-    display: inline-block;
+    font-family: inherit;
+    font-size: 14px;
     cursor: pointer;
 }
 
@@ -962,6 +970,8 @@ body {
 
 .btn-add-new {
     background-color: #2ecc71;
+    width: auto;
+    padding: 0 20px;
 }
 
 .admin-search-form {

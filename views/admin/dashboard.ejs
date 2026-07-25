@@ -42,6 +42,8 @@
                     <th>Tên sản phẩm</th>
                     <th>Loại</th>
                     <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Trạng thái</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -53,6 +55,14 @@
                             <td><%= item.name %></td>
                             <td><%= item.category || item.type %></td>
                             <td><%= new Intl.NumberFormat('vi-VN').format(item.price) %> ₫</td>
+                            <td><%= item.stock || 0 %></td>
+                            <td>
+                                <% if ((item.stock || 0) < 5) { %>
+                                    <span class="status-badge status-Cancelled">Cần nhập hàng</span>
+                                <% } else { %>
+                                    <span class="status-badge status-Completed">Bình thường</span>
+                                <% } %>
+                            </td>
                             <td class="actions">
                                 <a href="/admin/edit-item/<%= itemType %>/<%= item._id %>" class="btn-edit">Sửa</a>
                                 <form action="/admin/delete-item/<%= itemType %>/<%= item._id %>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
@@ -63,7 +73,7 @@
                     <% }) %>
                 <% } else { %>
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 20px;">Không tìm thấy sản phẩm nào phù hợp.</td>
+                        <td colspan="6" style="text-align: center; padding: 20px;">Không tìm thấy sản phẩm nào phù hợp.</td>
                     </tr>
                 <% } %>
             </tbody>
