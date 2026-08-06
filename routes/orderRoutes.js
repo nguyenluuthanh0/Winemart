@@ -11,7 +11,7 @@ const Order = require("../models/orderModel");
 const User = require("../models/userModel");
 const { requireLogin } = require("../middleware/authMiddleware");
 
-//  thêm các model sản phẩm để trừ tồn kho
+// Thêm các model sản phẩm để trừ tồn kho
 const Product = require("../models/productModel");
 const Accessory = require("../models/accessoryModel");
 const GiftSet = require("../models/giftSetModel");
@@ -57,15 +57,20 @@ function resolveCallbackUrl(req, envKey, fallbackPath) {
 }
 
 function sortObject(obj) {
-  const sorted = {};
-  const keys = Object.keys(obj).sort();
-  for (const key of keys) {
-    if (obj[key] !== undefined && obj[key] !== null)
-      sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, "+");
+  let sorted = {};
+  let str = [];
+  let key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      str.push(encodeURIComponent(key));
+    }
+  }
+  str.sort();
+  for (key = 0; key < str.length; key++) {
+    sorted[str[key]] = encodeURIComponent(obj[decodeURIComponent(str[key])]).replace(/%20/g, "+");
   }
   return sorted;
 }
-
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
   const rawIp =
@@ -132,7 +137,7 @@ router.post("/create-payment", requireLogin, async (req, res) => {
     const user = await User.findById(req.session.userId).populate("cart.item");
     if (!user || user.cart.length === 0) return res.redirect("/cart");
 
-    // ✅ KIỂM TRA TỒN KHO TRƯỚC KHI TẠO ĐƠN
+    // KIỂM TRA TỒN KHO TRƯỚC KHI TẠO ĐƠN
     const outOfStockMessages = [];
     for (const ci of user.cart) {
       if (!ci.item) {
@@ -169,14 +174,12 @@ router.post("/create-payment", requireLogin, async (req, res) => {
       const price = ci.item.price;
       amount += price * ci.quantity;
 
-      // Chuẩn hóa casing để tránh lỗi validation enum
       let model = ci.itemModel ?? "Product";
       const modelMap = { 'product': 'Product', 'accessory': 'Accessory', 'giftset': 'GiftSet' };
       if (modelMap[model.toLowerCase()]) {
           model = modelMap[model.toLowerCase()];
       }
 
-      // BƯỚC 4: Lấy giá vốn hiện tại từ database, nếu sản phẩm chưa có giá vốn thì mặc định là 0
       const costPrice = ci.item.costPrice || 0; 
 
       return {
@@ -184,7 +187,7 @@ router.post("/create-payment", requireLogin, async (req, res) => {
         itemModel: model,
         quantity: ci.quantity,
         price: price,             // Giá bán lúc khách đặt
-        costPrice: costPrice      // THÊM: Giá vốn lúc khách đặt
+        costPrice: costPrice      // Giá vốn lúc khách đặt
       };
     });
 
@@ -205,7 +208,6 @@ router.post("/create-payment", requireLogin, async (req, res) => {
 
     // COD
     if (paymentMethod === "cod") {
-      // ✅ TRỪ TỒN KHO THEO GIỎ HÀNG
       for (const ci of user.cart) {
         if (!ci.item) continue;
         const currentStock =
@@ -223,11 +225,12 @@ router.post("/create-payment", requireLogin, async (req, res) => {
       });
     }
 
-    // VNPay
+    // VNPay (Chuẩn cấu hình Merchant v2 Sandbox mới)
     if (paymentMethod === "vnpay") {
-      const tmnCode = process.env.VNPAY_TMNCODE;
-      const secretKey = process.env.VNPAY_HASHSECRET;
+      const tmnCode = (process.env.VNPAY_TMNCODE || "").trim();
+      const secretKey = (process.env.VNPAY_HASHSECRET || "").trim();
       let vnpUrl = process.env.VNPAY_URL;
+      
       if (!tmnCode || !secretKey || !vnpUrl)
         throw new Error("Thiếu cấu hình VNPay (TMNCODE, HASHSECRET, URL).");
 
@@ -237,47 +240,45 @@ router.post("/create-payment", requireLogin, async (req, res) => {
         "VNPAY_RETURNURL",
         "/order/vnpay_return"
       );
-      const ipnUrl = resolveCallbackUrl(
-        req,
-        "VNPAY_IPNURL",
-        "/order/vnpay_ipn"
-      );
 
-      const createDate = moment()
-        .utcOffset(7 * 60)
-        .format("YYYYMMDDHHmmss");
-      const expireDate = moment()
-        .utcOffset(7 * 60)
-        .add(15, "minutes")
-        .format("YYYYMMDDHHmmss");
+      const createDate = moment().utcOffset(7 * 60).format("YYYYMMDDHHmmss");
+      const expireDate = moment().utcOffset(7 * 60).add(15, "minutes").format("YYYYMMDDHHmmss");
       const amountForVnp = (Math.round(amount) * 100).toString();
 
-      let vnp_Params = sortObject({
+      let vnp_Params = {
         vnp_Version: "2.1.0",
         vnp_Command: "pay",
         vnp_TmnCode: tmnCode,
         vnp_Locale: "vn",
         vnp_CurrCode: "VND",
         vnp_TxnRef: order.orderId,
-        vnp_OrderInfo: `Thanh toan don hang ${order.orderId}`,
+        vnp_OrderInfo: `Thanhtoandonhang${order.orderId}`,
         vnp_OrderType: "other",
         vnp_Amount: amountForVnp,
         vnp_ReturnUrl: returnUrl,
         vnp_IpAddr: ipAddr,
         vnp_CreateDate: createDate,
         vnp_ExpireDate: expireDate,
-      });
+      };
 
+      // 1. Sắp xếp và Encode tham số theo chuẩn Merchant Sandbox mới
+      vnp_Params = sortObject(vnp_Params);
+      
+      // 2. Tạo chuỗi signData
       const signData = querystring.stringify(vnp_Params, { encode: false });
+
+      // 3. Đổi thuật toán băm sang SHA256 (Mặc định của tài khoản Sandbox v2 mới)
       const signed = crypto
-        .createHmac("sha512", secretKey)
+        .createHmac("sha256", secretKey)
         .update(Buffer.from(signData, "utf-8"))
         .digest("hex");
+
+      // 4. Gán SecureHash và xây dựng URL redirect
       vnp_Params["vnp_SecureHash"] = signed;
       vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
+
       return res.redirect(vnpUrl);
     }
-
     return res.status(400).send("Phương thức thanh toán không hợp lệ");
   } catch (err) {
     console.error("Lỗi tạo đơn:", err);
@@ -297,9 +298,10 @@ router.get("/vnpay_return", async (req, res) => {
   const secureHash = vnp_Params["vnp_SecureHash"];
   delete vnp_Params["vnp_SecureHash"];
   delete vnp_Params["vnp_SecureHashType"];
+  
   vnp_Params = sortObject(vnp_Params);
 
-  const secretKey = process.env.VNPAY_HASHSECRET;
+  const secretKey = (process.env.VNPAY_HASHSECRET || "").trim();
   const signData = querystring.stringify(vnp_Params, { encode: false });
   const signed = crypto
     .createHmac("sha512", secretKey)
@@ -320,7 +322,6 @@ router.get("/vnpay_return", async (req, res) => {
   } catch (_) {}
 
   if (valid && resultCode === "00" && order) {
-    // ✅ Nếu chưa paid thì trừ tồn kho (fallback trong trường hợp IPN không vào)
     if (!order.paid) {
       for (const line of order.items) {
         const Model = STOCK_MODELS[line.itemModel];
@@ -357,14 +358,16 @@ router.all("/vnpay_ipn", async (req, res) => {
   const secureHash = vnp_Params["vnp_SecureHash"];
   delete vnp_Params["vnp_SecureHash"];
   delete vnp_Params["vnp_SecureHashType"];
+  
   vnp_Params = sortObject(vnp_Params);
 
-  const secretKey = process.env.VNPAY_HASHSECRET;
+  const secretKey = (process.env.VNPAY_HASHSECRET || "").trim();
   const signData = querystring.stringify(vnp_Params, { encode: false });
   const signed = crypto
     .createHmac("sha512", secretKey)
     .update(Buffer.from(signData, "utf-8"))
     .digest("hex");
+
   if (secureHash !== signed)
     return res.status(200).json({ RspCode: "97", Message: "Invalid signature" });
 
@@ -377,7 +380,6 @@ router.all("/vnpay_ipn", async (req, res) => {
       return res.status(200).json({ RspCode: "01", Message: "Order not found" });
 
     if (resultCode === "00") {
-      // Nếu trước đó chưa paid (Return chưa xử lý) thì trừ tồn kho
       if (!order.paid) {
         for (const line of order.items) {
           const Model = STOCK_MODELS[line.itemModel];
@@ -418,8 +420,6 @@ router.get("/detail/:orderId", requireLogin, async (req, res) => {
       user: req.session.userId,
     }).populate("items.item");
     if (!order) return res.redirect("/my-orders");
-
-    /* removed vnpay hotfix */
 
     return res.render("order-status", { order });
   } catch (e) {

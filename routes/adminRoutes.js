@@ -6,8 +6,8 @@ const { isAdmin } = require('../middleware/authMiddleware');
 const Accessory = require('../models/accessoryModel'); 
 const GiftSet = require('../models/giftSetModel');
 const Order = require('../models/orderModel');
-const Slider = require('../models/sliderModel');
 const upload = require('../middleware/uploadMiddleware');
+const STOCK_MODELS = { Product, Accessory, GiftSet };
 
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
 router.use(isAdmin);
@@ -76,7 +76,8 @@ router.get('/add-product', (req, res) => {
 // POST /admin/add-item -> Xử lý việc thêm mọi loại sản phẩm
 router.post('/add-item', upload.single('imageFile'), async (req, res) => {
     try {
-        const { itemType, name, description, price, stock } = req.body;
+        // 1. Thêm costPrice vào destructuring req.body
+        const { itemType, name, description, price, costPrice, stock } = req.body;
         let imageUrl = req.body.imageUrl;
         if (req.file) {
             imageUrl = '/images/uploads/' + req.file.filename;
@@ -86,16 +87,31 @@ router.post('/add-item', upload.single('imageFile'), async (req, res) => {
         if (itemType === 'product') {
             const { brand, origin, type, volume, vintage, grape, abv, region, tastingNotes, foodPairing } = req.body;
             newItem = new Product({ 
-                name, description, imageUrl, price: Number(price), 
-                brand, origin, type, volume, stock: Number(stock || 0),
+                name, description, imageUrl, 
+                price: Number(price), 
+                costPrice: Number(costPrice || 0), // LƯU GIÁ VỐN
+                brand, origin, type, volume, 
+                stock: Number(stock || 0),
                 vintage, grape, abv, region, tastingNotes, foodPairing
             });
         } else if (itemType === 'accessory') {
             const category = req.body.categoryAccessory;
-            newItem = new Accessory({ name, description, imageUrl, price: Number(price), category });
+            newItem = new Accessory({ 
+                name, description, imageUrl, 
+                price: Number(price), 
+                costPrice: Number(costPrice || 0), // LƯU GIÁ VỐN
+                stock: Number(stock || 0),
+                category 
+            });
         } else if (itemType === 'giftset') {
             const category = req.body.categoryGiftSet;
-            newItem = new GiftSet({ name, description, imageUrl, price: Number(price), category });
+            newItem = new GiftSet({ 
+                name, description, imageUrl, 
+                price: Number(price), 
+                costPrice: Number(costPrice || 0), // LƯU GIÁ VỐN
+                stock: Number(stock || 0),
+                category 
+            });
         }
 
         if (newItem) {
@@ -103,10 +119,10 @@ router.post('/add-item', upload.single('imageFile'), async (req, res) => {
         }
         res.redirect('/admin');
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi thêm sản phẩm:", error);
+        res.status(500).send("Lỗi Server");
     }
 });
-
 // POST /admin/add-product -> Xử lý việc thêm sản phẩm mới
 router.post('/add-product', async (req, res) => {
     try {
@@ -157,7 +173,6 @@ router.post('/edit-item/:type/:id', upload.single('image'), async (req, res) => 
         const Model = getModelByType(type);
         
         if (Model) {
-            // Thay vì dùng findByIdAndUpdate, ta tìm item ra trước
             const item = await Model.findById(id);
             
             if (item) {
@@ -168,19 +183,25 @@ router.post('/edit-item/:type/:id', upload.single('image'), async (req, res) => 
                     item.imageUrl = '/images/uploads/' + req.file.filename;
                 }
 
-                // Đảm bảo trường stock là dạng số
-                if (req.body.stock) {
+                // Đảm bảo các trường số liệu được lưu đúng kiểu Number
+                if (req.body.stock !== undefined) {
                     item.stock = Number(req.body.stock);
                 }
+                
+                // THÊM 2 DÒNG NÀY ĐỂ ÉP KIỂU SỐ CHO GIÁ VỐN VÀ GIÁ BÁN
+                if (req.body.costPrice !== undefined) {
+                    item.costPrice = Number(req.body.costPrice);
+                }
+                if (req.body.price !== undefined) {
+                    item.price = Number(req.body.price);
+                }
 
-                // Gọi lệnh save() - Lúc này middleware pre('save') trong productModel.js sẽ tự động chạy
-                // để xét xem inStock là true hay false dựa vào số lượng stock mới
                 await item.save();
             }
         }
         res.redirect('/admin');
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi cập nhật sản phẩm:", error);
         res.status(500).send("Server Error");
     }
 });
@@ -260,13 +281,29 @@ router.post('/orders/update-status', async (req, res) => {
             }
         }
 
+        // 3. LOGIC MỚI: NẾU ĐƠN BỊ HỦY (CANCELLED) HOẶC THẤT BẠI (FAILED) -> CỘNG HOÀN TỒN KHO
+        if (['cancelled', 'failed'].includes(normalizedNewStatus)) {
+            for (const line of existingOrder.items) {
+                const Model = STOCK_MODELS[line.itemModel];
+                if (Model && line.item) {
+                    // Cộng lại số lượng đã hủy vào kho và cập nhật inStock = true
+                    await Model.updateOne(
+                        { _id: line.item },
+                        { 
+                            $inc: { stock: line.quantity },
+                            $set: { inStock: true }
+                        }
+                    );
+                }
+            }
+        }
+
         await Order.findByIdAndUpdate(
             orderId, 
             { $set: updateData },
             { new: true, runValidators: true }
         );
         
-        // Trả về JSON thành công
         return res.json({ success: true, message: "Cập nhật trạng thái thành công!" });
 
     } catch (error) {
@@ -309,15 +346,11 @@ router.post('/import', async (req, res) => {
             return res.status(400).send("Dữ liệu nhập không hợp lệ");
         }
 
-        // TÌM KIẾM ITEM TRONG CẢ 3 BẢNG (Tuần tự tìm đến khi thấy)
-        let item = await Product.findById(itemId);
-        if (!item) item = await Accessory.findById(itemId);
-        if (!item) item = await GiftSet.findById(itemId);
-
+        // Tìm item trong 3 bảng
+        let item = await Product.findById(itemId) || await Accessory.findById(itemId) || await GiftSet.findById(itemId);
         if (!item) return res.status(404).send("Không tìm thấy sản phẩm");
 
-        // THUẬT TOÁN TÍNH GIÁ VỐN BÌNH QUÂN GIA QUYỀN
-        // Đảm bảo không bị lỗi NaN nếu dữ liệu cũ chưa có stock hoặc costPrice
+        // Tính Giá vốn Bình quân Gia quyền
         const currentStock = item.stock || 0;
         const currentCostPrice = item.costPrice || 0;
 
@@ -325,18 +358,15 @@ router.post('/import', async (req, res) => {
         const newStock = currentStock + quantity;
         const newCostPrice = Math.round((oldTotalValue + totalCost) / newStock);
 
-        // Cập nhật vào DB
+        // CẬP NHẬT TỒN KHO & GIÁ VỐN (GIỮ NGUYÊN GIÁ BÁN item.price)
         item.stock = newStock;
         item.costPrice = newCostPrice;
-        
-        // Cập nhật trạng thái inStock nếu model của bạn có trường này
         if (item.stock > 0) {
             item.inStock = true;
         }
 
         await item.save();
 
-        // Quay về trang dashboard sau khi nhập kho xong
         res.redirect('/admin/dashboard'); 
     } catch (error) {
         console.error("Lỗi nhập kho:", error);
@@ -504,85 +534,4 @@ router.get('/order-detail/:id', async (req, res) => {
         res.status(500).send("Lỗi khi tải chi tiết đơn hàng");
     }
 });
-
-// ==================================
-// ROUTES QUẢN LÝ SLIDER
-// ==================================
-
-// GET: Hiển thị trang quản lý tất cả slider
-router.get('/sliders', async (req, res) => {
-    try {
-        const sliders = await Slider.find().sort({ position: 'asc' });
-        res.render('admin/manage-sliders', { sliders });
-    } catch (error) {
-        console.error("Lỗi khi tải trang quản lý slider:", error);
-        res.status(500).send("Lỗi Server");
-    }
-});
-
-// GET: Hiển thị form thêm slider mới
-router.get('/sliders/add', (req, res) => {
-    res.render('admin/add-slider');
-});
-
-// POST: Xử lý thêm slider mới
-router.post('/sliders/add', upload.single('imageFile'), async (req, res) => {
-    try {
-        const { title, subtitle, link, position } = req.body;
-        let imageUrl = '/images/default-slider.png'; // Ảnh mặc định
-        if (req.file) {
-            imageUrl = '/images/uploads/' + req.file.filename;
-        }
-        // Sửa lại để khớp với model: title -> title, subtitle -> text, link -> buttonLink
-        const newSlider = new Slider({ title, text: subtitle, buttonLink: link, buttonText: "Khám Phá Ngay", position, imageUrl });
-        await newSlider.save();
-        res.redirect('/admin/sliders');
-    } catch (error) {
-        console.error("Lỗi khi thêm slider:", error);
-        res.status(500).send("Lỗi Server");
-    }
-});
-
-// GET: Hiển thị form chỉnh sửa slider
-router.get('/sliders/edit/:id', async (req, res) => {
-    try {
-        const slider = await Slider.findById(req.params.id);
-        if (!slider) return res.status(404).send('Không tìm thấy slider.');
-        res.render('admin/edit-slider', { slider });
-    } catch (error) {
-        console.error("Lỗi khi tải form sửa slider:", error);
-        res.status(500).send("Lỗi Server");
-    }
-});
-
-// POST: Xử lý chỉnh sửa slider
-router.post('/sliders/edit/:id', upload.single('imageFile'), async (req, res) => {
-    try {
-        const { title, subtitle, link, position } = req.body;
-        // Sửa lại để khớp với model
-        const updateData = { title, text: subtitle, buttonLink: link, position };
-
-        if (req.file) {
-            updateData.imageUrl = '/images/uploads/' + req.file.filename;
-        }
-
-        await Slider.findByIdAndUpdate(req.params.id, updateData);
-        res.redirect('/admin/sliders');
-    } catch (error) {
-        console.error("Lỗi khi cập nhật slider:", error);
-        res.status(500).send("Lỗi Server");
-    }
-});
-
-// POST: Xóa slider
-router.post('/sliders/delete/:id', async (req, res) => {
-    try {
-        await Slider.findByIdAndDelete(req.params.id);
-        res.redirect('/admin/sliders');
-    } catch (error) {
-        console.error("Lỗi khi xóa slider:", error);
-        res.status(500).send("Lỗi Server");
-    }
-});
-
 module.exports = router;

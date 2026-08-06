@@ -7,7 +7,6 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const Accessory = require('../models/accessoryModel');
 const GiftSet = require('../models/giftSetModel');
-const Slider = require('../models/sliderModel');
 const jwt = require('jsonwebtoken'); 
 const { sendOTPEmail } = require('../utils/mailService');
 const crypto = require('crypto');
@@ -22,11 +21,10 @@ function escapeRegex(text) {
 // HIỂN THỊ TRANG CHỦ
 router.get('/', async (req, res) => {
     try {
-        const sliders = await Slider.find().sort({ position: 'asc' });
-        res.render('index', { sliders });
+        res.render('index');
     } catch (error) {
-        console.error('Error fetching sliders for homepage:', error);
-        res.render('index', { sliders: [] });
+        console.error('Error rendering homepage:', error);
+        res.status(500).send("Server Error");
     }
 });
 
@@ -385,4 +383,44 @@ router.post('/auth/reset-password', async (req, res) => {
         res.status(500).json({ success: false, message: "Lỗi Server." });
     }
 });
+// ROUTES FOR CHANGING PASSWORD
+router.get('/change-password', requireLogin, (req, res) => {
+    res.render('change-password', { error: null, success: null });
+});
+
+router.post('/change-password', requireLogin, async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.session.userId;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.render('change-password', { error: 'Không tìm thấy người dùng.', success: null });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.render('change-password', { error: 'Mật khẩu hiện tại không chính xác.', success: null });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.render('change-password', { error: 'Mật khẩu mới không khớp.', success: null });
+        }
+
+        if (newPassword.length < 6) {
+            return res.render('change-password', { error: 'Mật khẩu phải có ít nhất 6 ký tự.', success: null });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.render('change-password', { error: null, success: 'Đổi mật khẩu thành công!' });
+
+    } catch (error) {
+        console.error("Lỗi khi đổi mật khẩu:", error);
+        res.render('change-password', { error: 'Đã có lỗi xảy ra. Vui lòng thử lại.', success: null });
+    }
+});
+
 module.exports = router;

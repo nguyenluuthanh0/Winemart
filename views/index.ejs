@@ -31,28 +31,34 @@
         <section class="hero-slider">
             <div class="swiper heroSwiper">
                 <div class="swiper-wrapper">
-                    <% if (typeof sliders !== 'undefined' && sliders.length > 0) { %>
-                        <% sliders.forEach(slider => { %>
-                            <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('<%= slider.imageUrl %>');">
-                                <div class="slide-content container">
-                                    <h1><%= slider.title %></h1>
-                                    <p><%= slider.text %></p>
-                                    <% if (slider.buttonLink) { %>
-                                        <a href="<%= slider.buttonLink %>" class="btn-hero"><%= slider.buttonText %></a>
-                                    <% } %>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <!-- Fallback slide if no sliders are in the DB -->
-                        <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/anh-nen-1.png');">
-                            <div class="slide-content container">
-                                <h1>Chào mừng đến với WineShop</h1>
-                                <p>Khám phá bộ sưu tập rượu vang của chúng tôi.</p>
-                                <a href="#product-section" class="btn-hero">Xem Sản Phẩm</a>
-                            </div>
+                    <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/anh-nen-1.png');">
+                        <div class="slide-content container">
+                            <h1>Khám Phá Rượu Vang Đẳng Cấp</h1>
+                            <p>Tuyển chọn những chai vang thượng hạng từ khắp nơi trên thế giới.</p>
+                            <a href="#product-section" class="btn-hero scroll-link">Xem Sản Phẩm</a>
                         </div>
-                    <% } %>
+                    </div>
+                    <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/anh-nen-2.png');">
+                        <div class="slide-content container">
+                            <h1>Ưu Đãi Đặc Biệt Mùa Lễ Hội</h1>
+                            <p>Giảm giá tới 30% cho các bộ sưu tập quà tặng sang trọng.</p>
+                            <a href="/products/category-overview/qua-tang" class="btn-hero">Xem Quà Tặng</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/anh-nen-3.png');">
+                        <div class="slide-content container">
+                            <h1>Phụ Kiện Rượu Tinh Tế</h1>
+                            <p>Nâng tầm trải nghiệm thưởng thức với các phụ kiện chuyên nghiệp.</p>
+                            <a href="/products/category-overview/phu-kien-ruou" class="btn-hero">Khám Phá Phụ Kiện</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/anh-nen-4.png');">
+                        <div class="slide-content container">
+                            <h1>Tư Vấn Chọn Rượu Cùng Chuyên Gia</h1>
+                            <p>Liên hệ với chúng tôi để được tư vấn chai vang hoàn hảo cho bạn.</p>
+                            <a href="/contact" class="btn-hero">Liên Hệ Ngay</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-prev"></div>

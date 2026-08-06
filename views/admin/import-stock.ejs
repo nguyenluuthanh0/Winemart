@@ -96,8 +96,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="totalImportCost">Tổng tiền nhập lô này (VNĐ):</label>
-                    <input type="number" name="totalImportCost" id="totalImportCost" min="0" required placeholder="Ví dụ: Nhập 10 chai tổng 5000000">
+                    <label for="displayCost">Tổng tiền nhập lô này (VNĐ):</label>
+                    <!-- Ô hiển thị cho người dùng xem có dấu phẩy -->
+                    <input type="text" id="displayCost" class="price-input" required placeholder="Ví dụ: 5,000,000" autocomplete="off">
+                    <!-- Ô ẩn chứa giá trị số thuần túy để gửi lên Backend -->
+                    <input type="hidden" name="totalImportCost" id="totalImportCost">
                     <small class="hint-text">Hệ thống sẽ tự động chia đều để tính lại giá vốn bình quân cho sản phẩm.</small>
                 </div>
 
@@ -111,8 +114,10 @@
         const searchList = document.getElementById('searchList');
         const listItems = searchList.querySelectorAll('li[data-id]');
         const hiddenItemId = document.getElementById('itemId');
+        const displayCost = document.getElementById('displayCost');
+        const totalImportCost = document.getElementById('totalImportCost');
 
-        // 1. Hiện danh sách khi click vào ô input
+        // 1. Hiện danh sách khi click vào ô input tìm kiếm
         searchInput.addEventListener('focus', function() {
             searchList.style.display = 'block';
         });
@@ -133,11 +138,10 @@
             });
 
             searchList.style.display = hasVisibleItem ? 'block' : 'none';
-            // Reset dữ liệu nếu người dùng cố tình gõ sai chữ sau khi đã chọn
-            hiddenItemId.value = ''; 
+            hiddenItemId.value = ''; // Reset ID ẩn nếu người dùng sửa đổi chữ
         });
 
-        // 3. Khi người dùng click chọn 1 sản phẩm
+        // 3. Khi người dùng click chọn 1 sản phẩm từ danh sách xổ xuống
         listItems.forEach(li => {
             li.addEventListener('click', function() {
                 searchInput.value = this.getAttribute('data-name'); // Hiển thị tên
@@ -153,11 +157,28 @@
             }
         });
 
-        // 5. Kiểm tra bắt buộc chọn đúng sản phẩm mới cho submit
+        // 5. Tự động định dạng dấu phẩy hàng nghìn cho Tổng tiền nhập
+        displayCost.addEventListener('input', function() {
+            let numericValue = this.value.replace(/\D/g, ''); // Xóa toàn bộ ký tự không phải số
+            totalImportCost.value = numericValue; // Lưu chuỗi số thuần túy vào ô hidden
+            
+            if (numericValue) {
+                this.value = Number(numericValue).toLocaleString('en-US'); // Thêm dấu phẩy hiển thị
+            } else {
+                this.value = '';
+            }
+        });
+
+        // 6. Kiểm tra dữ liệu bắt buộc trước khi Submit
         function validateForm() {
             if (!hiddenItemId.value) {
                 alert("Bạn phải bấm chọn một sản phẩm từ danh sách xổ xuống!");
                 searchInput.focus();
+                return false;
+            }
+            if (!totalImportCost.value || Number(totalImportCost.value) <= 0) {
+                alert("Vui lòng nhập tổng tiền nhập hàng hợp lệ!");
+                displayCost.focus();
                 return false;
             }
             return true;
