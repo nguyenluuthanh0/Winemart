@@ -56,21 +56,24 @@ function resolveCallbackUrl(req, envKey, fallbackPath) {
   return `${isLocal ? 'http' : protocol}://${host}${fallbackPath}`;
 }
 
+// Hàm sắp xếp & encode an toàn tuyệt đối với mọi dạng Object
 function sortObject(obj) {
   let sorted = {};
   let str = [];
   let key;
   for (key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       str.push(encodeURIComponent(key));
     }
   }
   str.sort();
   for (key = 0; key < str.length; key++) {
-    sorted[str[key]] = encodeURIComponent(obj[decodeURIComponent(str[key])]).replace(/%20/g, "+");
+    const rawKey = decodeURIComponent(str[key]);
+    sorted[str[key]] = encodeURIComponent(obj[rawKey]).replace(/%20/g, "+");
   }
   return sorted;
 }
+
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
   const rawIp =
@@ -225,7 +228,7 @@ router.post("/create-payment", requireLogin, async (req, res) => {
       });
     }
 
-    // VNPay (Chuẩn cấu hình Merchant v2 Sandbox mới)
+    // VNPay
     if (paymentMethod === "vnpay") {
       const tmnCode = (process.env.VNPAY_TMNCODE || "").trim();
       const secretKey = (process.env.VNPAY_HASHSECRET || "").trim();
@@ -261,19 +264,19 @@ router.post("/create-payment", requireLogin, async (req, res) => {
         vnp_ExpireDate: expireDate,
       };
 
-      // 1. Sắp xếp và Encode tham số theo chuẩn Merchant Sandbox mới
+      // 1. Sắp xếp & Encode các tham số đúng chuẩn SDK
       vnp_Params = sortObject(vnp_Params);
       
-      // 2. Tạo chuỗi signData
+      // 2. Tạo chuỗi signData để băm (Dùng encode: false vì vnp_Params đã được sortObject mã hóa)
       const signData = querystring.stringify(vnp_Params, { encode: false });
 
-      // 3. Đổi thuật toán băm sang SHA256 (Mặc định của tài khoản Sandbox v2 mới)
+      // 3. Băm HMAC SHA512
       const signed = crypto
-        .createHmac("sha256", secretKey)
+        .createHmac("sha512", secretKey)
         .update(Buffer.from(signData, "utf-8"))
         .digest("hex");
 
-      // 4. Gán SecureHash và xây dựng URL redirect
+      // 4. Gán SecureHash vào tham số và ghép URL final
       vnp_Params["vnp_SecureHash"] = signed;
       vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
 
