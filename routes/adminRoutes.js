@@ -8,7 +8,9 @@ const GiftSet = require('../models/giftSetModel');
 const Order = require('../models/orderModel');
 const upload = require('../middleware/uploadMiddleware');
 const STOCK_MODELS = { Product, Accessory, GiftSet };
-
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
 // Áp dụng middleware isAdmin cho TẤT CẢ các route trong file này
 router.use(isAdmin);
 
@@ -40,7 +42,20 @@ router.get('/dashboard', async (req, res) => {
         ]);
 
         const allItems = [...products, ...accessories, ...giftSets];
-        allItems.sort((a, b) => b.createdAt - a.createdAt);
+        allItems.sort((a, b) => {
+            const stockA = a.stock || 0;
+            const stockB = b.stock || 0;
+
+            const isLowStockA = stockA < 5;
+            const isLowStockB = stockB < 5;
+
+            // 1. Ưu tiên sản phẩm cần nhập hàng (stock < 5) lên đầu
+            if (isLowStockA && !isLowStockB) return -1;
+            if (!isLowStockA && isLowStockB) return 1;
+
+            // 2. Nếu cùng trạng thái (cùng < 5 hoặc cùng >= 5), sắp xếp theo sản phẩm mới tạo lên trước
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
 
         // Truy vấn dữ liệu thống kê
         const totalOrders = await Order.countDocuments();
@@ -219,34 +234,43 @@ router.post('/delete-item/:type/:id', async (req, res) => {
     }
 });
 
-// GET /admin/orders -> Hiển thị danh sách đơn hàng (Có tích hợp bộ lọc trạng thái)
+// GET /admin/orders -> Hiển thị danh sách đơn hàng (Có tích hợp bộ lọc trạng thái & tìm kiếm)
 router.get('/orders', async (req, res) => {
     try {
-        // 1. Lấy trạng thái cần lọc từ URL (Mặc định là 'all' nếu không có)
         const filterStatus = req.query.status || 'all';
+        const searchTerm = (req.query.search || '').trim();
+
         let query = {};
 
-        // 2. Nếu Admin chọn một trạng thái cụ thể, thêm nó vào điều kiện tìm kiếm
+        // 1. Lọc theo trạng thái
         if (filterStatus !== 'all') {
             query.status = filterStatus;
         }
 
-        // 3. Lấy danh sách đơn hàng đã được lọc
+        // 2. Lọc theo tên hoặc SĐT khách hàng
+        if (searchTerm) {
+            const safeSearch = escapeRegex(searchTerm);
+            query.$or = [
+                { 'customerInfo.name': { $regex: safeSearch, $options: 'i' } },
+                { 'customerInfo.phone': { $regex: safeSearch, $options: 'i' } }
+            ];
+        }
+
+        // 3. Truy vấn dữ liệu
         const orders = await Order.find(query)
             .sort({ createdAt: -1 })
             .populate('user', 'fullName email phone'); 
         
-        // Trả về view kèm theo biến statusFilter để làm sáng option trên giao diện
         res.render('admin/orders', { 
             orders: orders,
-            statusFilter: filterStatus 
+            statusFilter: filterStatus,
+            searchTerm: searchTerm
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Server Error");
+        console.error("Lỗi danh sách đơn hàng:", error);
+        res.status(500).send("Lỗi Server khi tìm kiếm đơn hàng");
     }
 });
-
 // POST: Cập nhật trạng thái đơn hàng (DÙNG AJAX)
 router.post('/orders/update-status', async (req, res) => {
     try {

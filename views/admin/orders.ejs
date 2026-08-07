@@ -12,117 +12,138 @@
 <body>
     <%- include('../partials/header') %>
     
-    <div class="container" style="margin-top: 20px;">
-        <div class="admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <!-- Giới hạn độ rộng tối đa và căn giữa toàn bộ nội dung -->
+    <div class="container" style="margin-top: 20px; margin-bottom: 40px; max-width: 1250px; padding: 0 20px; box-sizing: border-box;">
+        
+        <!-- Header & Form tìm kiếm + Lọc -->
+        <div class="admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 15px;">
             <h1 style="margin: 0; font-size: 22px;">Danh sách Đơn hàng</h1>
             
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="statusFilter" style="font-weight: bold; color: #555; font-size: 14px;">
-                    <i class="fas fa-filter"></i> Lọc theo:
-                </label>
-                <select id="statusFilter" onchange="filterOrders(this.value)" style="padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500; cursor: pointer; outline: none;">
-                    <option value="all" <%= typeof statusFilter !== 'undefined' && statusFilter === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
-                    <option value="pending" <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'selected' : '' %>>Chờ xử lý (Mới)</option>
-                    <option value="processing" <%= typeof statusFilter !== 'undefined' && statusFilter === 'processing' ? 'selected' : '' %>>Đang giao hàng</option>
-                    <option value="completed" <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'selected' : '' %>>Đã hoàn thành</option>
-                    <option value="cancelled" <%= typeof statusFilter !== 'undefined' && statusFilter === 'cancelled' ? 'selected' : '' %>>Đơn đã hủy</option>
-                </select>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <!-- Form tìm kiếm theo Tên hoặc Số điện thoại -->
+                <form action="/admin/orders" method="GET" style="display: flex; gap: 8px; margin: 0;">
+                    <% if (typeof statusFilter !== 'undefined' && statusFilter !== 'all') { %>
+                        <input type="hidden" name="status" value="<%= statusFilter %>">
+                    <% } %>
+                    <input 
+                        type="search" 
+                        name="search" 
+                        placeholder="Tìm theo tên hoặc SĐT..." 
+                        value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
+                        style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; outline: none; font-size: 14px; min-width: 220px;"
+                    >
+                    <button type="submit" class="btn-edit" style="padding: 8px 15px; height: auto; width: auto;">Tìm</button>
+                    <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                        <a href="/admin/orders<%= statusFilter !== 'all' ? '?status=' + statusFilter : '' %>" class="btn-delete" style="padding: 8px 12px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: auto; width: auto;">✕ Xóa tìm kiếm</a>
+                    <% } %>
+                </form>
+
+                <!-- Bộ lọc trạng thái -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label for="statusFilter" style="font-weight: bold; color: #555; font-size: 14px;">
+                        <i class="fas fa-filter"></i> Trạng thái:
+                    </label>
+                    <select id="statusFilter" onchange="filterOrders(this.value)" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500; cursor: pointer; outline: none;">
+                        <option value="all" <%= typeof statusFilter !== 'undefined' && statusFilter === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+                        <option value="pending" <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'selected' : '' %>>Chờ xử lý (Mới)</option>
+                        <option value="processing" <%= typeof statusFilter !== 'undefined' && statusFilter === 'processing' ? 'selected' : '' %>>Đang giao hàng</option>
+                        <option value="completed" <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'selected' : '' %>>Đã hoàn thành</option>
+                        <option value="cancelled" <%= typeof statusFilter !== 'undefined' && statusFilter === 'cancelled' ? 'selected' : '' %>>Đơn đã hủy</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Mã đơn</th>
-                    <th>Khách hàng</th>
-                    <th>Ngày đặt</th>
-                    <th>Doanh thu / Lợi nhuận</th>
-                    <th>Hình thức</th>
-                    <th>Trạng thái / Cập nhật</th>
-                    <th>Chi tiết</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if(orders && orders.length > 0) { %>
-                    <% orders.forEach(order => { %>
-                        <tr>
-                            <td><small style="color: #666;"><%= order.orderId || order._id.toString().slice(-6) %></small></td>
-                            <td>
-                                <strong><%= order.customerInfo ? order.customerInfo.name : 'Khách vãng lai' %></strong><br>
-                                <small style="color: #666;"><%= order.customerInfo ? order.customerInfo.phone : '' %></small>
-                            </td>
-                            <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
-                            <td>
-                                <% 
-                                    let orderProfit = 0;
-                                    if (order.items && order.items.length > 0) {
-                                        orderProfit = order.items.reduce((sum, item) => sum + ((item.price - (item.costPrice || 0)) * item.quantity), 0);
-                                    }
-                                %>
-                                <div style="color: #800020; font-weight: bold; font-size: 15px;" title="Doanh thu">
-                                    <%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫
-                                </div>
-                                <div style="color: #28a745; font-size: 13px; margin-top: 4px; font-weight: bold;" title="Lợi nhuận">
-                                    + <%= new Intl.NumberFormat('vi-VN').format(orderProfit) %> ₫ (Lãi)
-                                </div>
-                            </td>
-                            <td style="text-transform: uppercase;"><%= order.paymentMethod %></td>
-                            
-                            <td>
-                                <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
-                                    <input type="hidden" name="orderId" value="<%= order._id %>">
-                                    <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500;
-                                        background-color: 
-                                            <%= order.status === 'pending' ? '#fff3cd' : 
-                                                order.status === 'processing' ? '#cce5ff' : 
-                                                order.status === 'completed' ? '#d4edda' : '#f8d7da' %>;
-                                    ">
-                                        <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
-                                        <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang giao</option>
-                                        <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
-                                        <option value="cancelled" <%= order.status === 'cancelled' || order.status === 'failed' ? 'selected' : '' %>>Đã hủy</option>
-                                    </select>
-                                    <button type="submit" class="btn-edit" style="padding: 5px 10px;">Lưu</button>
-                                </form>
-                            </td>
-                            
-                            <td>
-                                <a href="/admin/order-detail/<%= order._id %>" class="btn-add-new" style="padding: 5px 10px;">Xem Chi Tiết</a>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
+            <table class="admin-table" style="width: 100%; margin-top: 0;">
+                <thead>
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 20px;">Chưa có đơn hàng nào.</td>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Doanh thu / Lợi nhuận</th>
+                        <th>Hình thức</th>
+                        <th>Trạng thái / Cập nhật</th>
+                        <th>Chi tiết</th>
                     </tr>
-                <% } %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% if(orders && orders.length > 0) { %>
+                        <% orders.forEach(order => { %>
+                            <tr>
+                                <td><small style="color: #666;"><%= order.orderId || order._id.toString().slice(-6) %></small></td>
+                                <td>
+                                    <strong><%= order.customerInfo ? order.customerInfo.name : 'Khách vãng lai' %></strong><br>
+                                    <small style="color: #666;"><%= order.customerInfo ? order.customerInfo.phone : '' %></small>
+                                </td>
+                                <td><%= new Date(order.createdAt).toLocaleDateString('vi-VN') %></td>
+                                <td>
+                                    <% 
+                                        let orderProfit = 0;
+                                        if (order.items && order.items.length > 0) {
+                                            orderProfit = order.items.reduce((sum, item) => sum + ((item.price - (item.costPrice || 0)) * item.quantity), 0);
+                                        }
+                                    %>
+                                    <div style="color: #800020; font-weight: bold; font-size: 15px;" title="Doanh thu">
+                                        <%= new Intl.NumberFormat('vi-VN').format(order.amount || order.totalAmount) %> ₫
+                                    </div>
+                                    <div style="color: #28a745; font-size: 13px; margin-top: 4px; font-weight: bold;" title="Lợi nhuận">
+                                        + <%= new Intl.NumberFormat('vi-VN').format(orderProfit) %> ₫ (Lãi)
+                                    </div>
+                                </td>
+                                <td style="text-transform: uppercase;"><%= order.paymentMethod %></td>
+                                
+                                <td>
+                                    <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
+                                        <input type="hidden" name="orderId" value="<%= order._id %>">
+                                        <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500;
+                                            background-color: 
+                                                <%= order.status === 'pending' ? '#fff3cd' : 
+                                                    order.status === 'processing' ? '#cce5ff' : 
+                                                    order.status === 'completed' ? '#d4edda' : '#f8d7da' %>;
+                                        ">
+                                            <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
+                                            <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang giao</option>
+                                            <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
+                                            <option value="cancelled" <%= order.status === 'cancelled' || order.status === 'failed' ? 'selected' : '' %>>Đã hủy</option>
+                                        </select>
+                                        <button type="submit" class="btn-edit" style="padding: 5px 10px;">Lưu</button>
+                                    </form>
+                                </td>
+                                
+                                <td>
+                                    <a href="/admin/order-detail/<%= order._id %>" class="btn-add-new" style="padding: 5px 10px;">Xem Chi Tiết</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px;">Chưa có đơn hàng nào.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
     </div>
 
+    <div id="toast-container"></div>
+
     <script src="/js/header.js"></script>
-    <script>
-        function filterOrders(status) {
-            // Tự động chuyển hướng URL theo trạng thái đã chọn
-            window.location.href = `/admin/orders?status=${status}`;
-        }
-    </script>
-</body>
-<div id="toast-container"></div>
-    
     <script src="/js/notifications.js"></script>
     <script>
+        function filterOrders(status) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('status', status);
+            window.location.href = `/admin/orders?${urlParams.toString()}`;
+        }
+
         // Lắng nghe sự kiện submit của tất cả các form cập nhật trạng thái
         document.querySelectorAll('form[action="/admin/orders/update-status"]').forEach(form => {
             form.addEventListener('submit', async (e) => {
-                e.preventDefault(); // Ngăn chặn trình duyệt tự động load lại trang
+                e.preventDefault();
 
-                // Lấy dữ liệu từ form
                 const orderId = form.querySelector('input[name="orderId"]').value;
                 const newStatus = form.querySelector('select[name="newStatus"]').value;
 
                 try {
-                    // Gọi API bằng Fetch giống hệt cách làm ở giỏ hàng
                     const response = await fetch('/admin/orders/update-status', {
                         method: 'POST',
                         headers: {
@@ -134,20 +155,14 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        // Hiện thông báo màu xanh
                         showToast(data.message, 'success');
-                        
-                        // Đợi 1.5 giây cho admin nhìn thấy thông báo rồi mới load lại trang để cập nhật màu bảng
                         setTimeout(() => {
                             window.location.reload();
                         }, 1500);
                     } else {
-                        // Hiện thông báo lỗi màu đỏ nếu vi phạm logic (VD: Đổi đơn đã hủy)
                         showToast(data.message || 'Lỗi không xác định', 'error');
-                        
-                        // Khôi phục lại select box về giá trị cũ (không cần load lại trang)
                         setTimeout(() => {
-                            window.location.reload(); // Tải lại để reset view
+                            window.location.reload();
                         }, 1500);
                     }
                 } catch (error) {
@@ -156,4 +171,5 @@
             });
         });
     </script>
+</body>
 </html>
