@@ -54,6 +54,8 @@
             </div>
         </div>
 
+        <!-- Khung chứa bảng gọn gàng -->
+        <div style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #eee; overflow-x: auto;">
             <table class="admin-table" style="width: 100%; margin-top: 0;">
                 <thead>
                     <tr>
@@ -69,6 +71,12 @@
                 <tbody>
                     <% if(orders && orders.length > 0) { %>
                         <% orders.forEach(order => { %>
+                            <% 
+                                let bgColor = '#fff3cd';
+                                if (order.status === 'processing') bgColor = '#cce5ff';
+                                else if (order.status === 'completed') bgColor = '#d4edda';
+                                else if (order.status === 'cancelled' || order.status === 'failed') bgColor = '#f8d7da';
+                            %>
                             <tr>
                                 <td><small style="color: #666;"><%= order.orderId || order._id.toString().slice(-6) %></small></td>
                                 <td>
@@ -95,12 +103,7 @@
                                 <td>
                                     <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
                                         <input type="hidden" name="orderId" value="<%= order._id %>">
-                                        <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500;
-                                            background-color: 
-                                                <%= order.status === 'pending' ? '#fff3cd' : 
-                                                    order.status === 'processing' ? '#cce5ff' : 
-                                                    order.status === 'completed' ? '#d4edda' : '#f8d7da' %>;
-                                        ">
+                                        <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500; background-color: <%= bgColor %>;">
                                             <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
                                             <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang giao</option>
                                             <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
@@ -122,6 +125,7 @@
                     <% } %>
                 </tbody>
             </table>
+        </div>
     </div>
 
     <div id="toast-container"></div>
