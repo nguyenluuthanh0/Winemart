@@ -7,6 +7,12 @@
     <style>
         .main-header { position: relative !important; z-index: 9999 !important; }
         .user-dropdown { z-index: 10000 !important; }
+        
+        /* Các class màu nền cho ô chọn trạng thái (Giúp VS Code không bao giờ báo lỗi) */
+        .select-pending { background-color: #fff3cd !important; }
+        .select-processing { background-color: #cce5ff !important; }
+        .select-completed { background-color: #d4edda !important; }
+        .select-cancelled { background-color: #f8d7da !important; }
     </style>
 </head>
 <body>
@@ -72,10 +78,11 @@
                     <% if(orders && orders.length > 0) { %>
                         <% orders.forEach(order => { %>
                             <% 
-                                let bgColor = '#fff3cd';
-                                if (order.status === 'processing') bgColor = '#cce5ff';
-                                else if (order.status === 'completed') bgColor = '#d4edda';
-                                else if (order.status === 'cancelled' || order.status === 'failed') bgColor = '#f8d7da';
+                                // Chọn class màu nền tương ứng với trạng thái đơn hàng
+                                let statusClass = 'select-pending';
+                                if (order.status === 'processing') statusClass = 'select-processing';
+                                else if (order.status === 'completed') statusClass = 'select-completed';
+                                else if (order.status === 'cancelled' || order.status === 'failed') statusClass = 'select-cancelled';
                             %>
                             <tr>
                                 <td><small style="color: #666;"><%= order.orderId || order._id.toString().slice(-6) %></small></td>
@@ -103,7 +110,8 @@
                                 <td>
                                     <form action="/admin/orders/update-status" method="POST" style="display: flex; gap: 5px;">
                                         <input type="hidden" name="orderId" value="<%= order._id %>">
-                                        <select name="newStatus" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500; background-color: <%= bgColor %>;">
+                                        <!-- Sử dụng class CSS thay vì style inline phức tạp -->
+                                        <select name="newStatus" class="<%= statusClass %>" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-weight: 500;">
                                             <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
                                             <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang giao</option>
                                             <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
