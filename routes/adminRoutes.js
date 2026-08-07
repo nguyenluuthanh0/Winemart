@@ -374,7 +374,7 @@ router.post('/import', async (req, res) => {
         let item = await Product.findById(itemId) || await Accessory.findById(itemId) || await GiftSet.findById(itemId);
         if (!item) return res.status(404).send("Không tìm thấy sản phẩm");
 
-        // Tính Giá vốn Bình quân Gia quyền
+        // Tính Giá vốn Bình quân
         const currentStock = item.stock || 0;
         const currentCostPrice = item.costPrice || 0;
 
